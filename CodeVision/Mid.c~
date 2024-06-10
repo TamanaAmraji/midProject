@@ -1,18 +1,38 @@
 #include <mega32.h>
-
+#include <delay.h>
 // Declare your global variables here
-int LCD_ref=0xF0, i=0;
+int LCD_ref=0xEF, i=0, digit[2];
+
+    const int segments[] =
+     {
+        // 0bGFEDCBA
+        0x40, // 0
+        0x79, // 1
+        0x24, // 2
+        0x30, // 3
+        0x19, // 4
+        0x12, // 5
+        0x02, // 6
+        0x78, // 7
+        0x00, // 8
+        0x10 // 9
+    };
+
+// Function prototypes
+void display_on_seven_segment(int number);
+
 // Timer 0 output compare interrupt service routine
 interrupt [TIM0_COMP] void timer0_comp_isr(void)
 {
 // Place your code here
-    PORTA = ~LCD_ref;   
+    PORTA = ~LCD_ref;  
+    PORTC = ~(segments[digit[i]]); 
     LCD_ref = LCD_ref<<1; 
     i++;
-    if (i == 5) 
+    if (i == 4) 
     {
         i = 0;
-        LCD_ref = 0xF0;
+        LCD_ref = 0xEF;
     } 
 }
 
@@ -124,6 +144,32 @@ TWCR=(0<<TWEA) | (0<<TWSTA) | (0<<TWSTO) | (0<<TWEN) | (0<<TWIE);
 while (1)
       {
       // Place your code here
-
+        display_on_seven_segment(25);
+      //PORTC = ~(0x10);
       }
+}
+
+void display_on_seven_segment(int number) {
+    
+    // Display the given number on the seven segment display 
+    // Define the segments for each digit (assuming common cathode display)     
+    const int segments[] =
+     {
+        // 0bGFEDCBA
+        0x40, // 0
+        0x79, // 1
+        0x24, // 2
+        0x30, // 3
+        0x19, // 4
+        0x12, // 5
+        0x02, // 6
+        0x78, // 7
+        0x00, // 8
+        0x10 // 9
+    };
+
+    // Extract digits from the number
+     digit[1] = number / 10;
+     digit[2] = number % 10;
+  
 }

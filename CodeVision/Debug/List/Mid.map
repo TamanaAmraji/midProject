@@ -1,6 +1,7 @@
 RAM Allocation [bytes]
 Variable                                                                          Address   Size
 ------------------------------------------------------------------------------------------------
+digit                                                                             0x0260       4
 
 EEPROM Allocation [bytes]
 Variable                                                                          Address   Size
@@ -15,5 +16,6 @@ i                                                                               
 FLASH Allocation [words]
 Function                                                                          Address   Size
 ------------------------------------------------------------------------------------------------
-timer0_comp_isr                                                                   0x0005D     27
-main                                                                              0x00078     56
+timer0_comp_isr                                                                   0x00071     49
+main                                                                              0x000A2     59
+display_on_seven_segment                                                          0x000DD     32

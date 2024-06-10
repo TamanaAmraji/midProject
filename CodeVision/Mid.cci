@@ -1,6 +1,10 @@
-VERSION:3 SOURCE_TIMESTAMP:58CA8F0D
+VERSION:3 SOURCE_TIMESTAMP:58CAADA9
 NODE:I LEVEL:0 LINE:1 "C:\cvavr\inc\mega32.h"
+NODE:I LEVEL:0 LINE:2 "C:\cvavr\inc\delay.h"
 NODE:V LEVEL:0 LINE:4 "LCD_ref -> R4,R5"
 NODE:V LEVEL:0 LINE:4 "i -> R6,R7"
-NODE:F LEVEL:0 LINE:6 "timer0_comp_isr(void)"
-NODE:F LEVEL:0 LINE:19 "main(void)"
+NODE:V LEVEL:0 LINE:4 "digit -> RAM:????"
+NODE:C LEVEL:0 LINE:6 "segments -> FLASH"
+NODE:F LEVEL:0 LINE:25 "timer0_comp_isr(void)"
+NODE:F LEVEL:0 LINE:39 "main(void)"
+NODE:F LEVEL:0 LINE:152 "display_on_seven_segment(int number)"
