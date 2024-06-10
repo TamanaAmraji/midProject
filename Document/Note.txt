@@ -1,0 +1,14 @@
+Errors fixed:
+1- PB7 => PINB.7
+2- must declare first in the block : local void varables should declare in the first of void
+for example :
+void main()
+ {
+    int minutes = 0,seconds = 0; //first declare variables
+    char key; 
+    init(); //now write content of void 
+    .
+    .
+    .
+ }
+3- ISR function

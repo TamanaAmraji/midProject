@@ -1,26 +1,3 @@
-;/*******************************************************
-;This program was created by the
-;CodeWizardAVR V3.14 Advanced
-;Automatic Program Generator
-;© Copyright 1998-2014 Pavel Haiduc, HP InfoTech s.r.l.
-;http://www.hpinfotech.com
-;
-;Project :
-;Version :
-;Date    : 5/27/2024
-;Author  :
-;Company :
-;Comments:
-;
-;
-;Chip type               : ATmega32
-;Program type            : Application
-;AVR Core Clock frequency: 8.000000 MHz
-;Memory model            : Small
-;External RAM size       : 0
-;Data Stack size         : 512
-;*******************************************************/
-;
 ;#include <mega32.h>
 ;PCODE: $00000000 VOL: 0
 	#ifndef __SLEEP_DEFINED__
@@ -47,284 +24,268 @@
 ;PCODE: $0000000B VOL: 0
 ;PCODE: $0000000C VOL: 0
 ;#include <delay.h>
-;
-;// Declare your global variables here
-;int seg[]={0x40,0x79,0x24,0x30,0x19,0x12,0x02,0x78,0x00,0x10};
-
-	.DSEG
-;//int seg[]={0x78,0x00,0x10,0,0x19,0x12,0x02,0,0x79,0x24,0x30,0,0,0x40,0,0};  //7,8,9,/,4,5,6,x,1,2,3,-,c,0,=,+
-;char out;
-;char determine();
-;int input=0;
-;char ref[]= {
-;            0b00000001,
-;            0b00000010,
-;            0b00000100,
-;            0b00001000
-;            };                      //for refreshing rows
-;char keys[]= {                      //based on keypad model we use
-;              '/', '9', '8', '7',
-;              'x', '6', '5', '4',
-;              '-', '3', '2', '1',
-;              '+', '=', '0', 'c'
-;              };
-;char keypad();
-;int LightDancer();
-;
-;#define col0    PINB.0
-;#define col1    PINB.1
-;#define col2    PINB.2
-;#define col3    PINB.3
-;
-;// Timer1 overflow interrupt service routine
-;interrupt [TIM1_OVF] void timer1_ovf_isr(void)
-; 0000 0037 {
+;#include <interrupt.h>
+;	flags -> R17
 
 	.CSEG
 ;PCODE: $0000000D VOL: 0
 ;PCODE: $0000000E VOL: 0
-; 0000 0038 // Reinitialize Timer1 value
-; 0000 0039 TCNT1H=0x85EE >> 8;
 ;PCODE: $0000000F VOL: 0
 ;PCODE: $00000010 VOL: 0
-; 0000 003A TCNT1L=0x85EE & 0xff;
 ;PCODE: $00000011 VOL: 0
+	cli
 ;PCODE: $00000012 VOL: 0
-; 0000 003B // Place your code here
-; 0000 003C }
 ;PCODE: $00000013 VOL: 0
 ;PCODE: $00000014 VOL: 0
 ;PCODE: $00000015 VOL: 0
-;
-;// Timer1 output compare A interrupt service routine
-;interrupt [TIM1_COMPA] void timer1_compa_isr(void)
-; 0000 0040 {
 ;PCODE: $00000016 VOL: 0
-;PCODE: $00000017 VOL: 0
-; 0000 0041 // Place your code here
-; 0000 0042 
-; 0000 0043 }
-;PCODE: $00000018 VOL: 0
-;PCODE: $00000019 VOL: 0
-;PCODE: $0000001A VOL: 0
 ;
-;// Timer1 output compare B interrupt service routine
-;interrupt [TIM1_COMPB] void timer1_compb_isr(void)
-; 0000 0047 {
+;// Define pins for seven segment display, keypad, buzzer, and LEDs
+;#define SEVENSEG_PORT PORTA
+;#define KEYPAD_PORT PORTB
+;#define BUZZER_PORT PORTC
+;#define LED_PORT PORTD
+;
+;// Function prototypes
+;void init();
+;char read_keypad();
+;void display_on_seven_segment(int number);
+;void countdown_timer(int minutes, int seconds);
+;void sound_buzzer();
+;void led_animation();
+;
+;void main()
+; 0000 0014 {
+;PCODE: $00000017 VOL: 0
+; 0000 0015 //    int minutes = 0,seconds = 0;
+; 0000 0016 //    char key;
+; 0000 0017 //
+; 0000 0018     init();
+;PCODE: $00000018 VOL: 0
+; 0000 0019 //    // Read minutes input from keypad
+; 0000 001A //    while(1) {
+; 0000 001B //        key = read_keypad();
+; 0000 001C //        if(key >= '0' && key <= '9') {
+; 0000 001D //            minutes = minutes * 10 + (key - '0');
+; 0000 001E //            display_on_seven_segment(minutes);
+; 0000 001F //        }
+; 0000 0020 //        else if(key == '+') {
+; 0000 0021 //            // Read seconds input from keypad
+; 0000 0022 //            while(1) {
+; 0000 0023 //                key = read_keypad();
+; 0000 0024 //                if(key >= '0' && key <= '9') {
+; 0000 0025 //                    seconds = seconds * 10 + (key - '0');
+; 0000 0026 //                    display_on_seven_segment(seconds);
+; 0000 0027 //                }
+; 0000 0028 //                else if(key == '=') {
+; 0000 0029 //                    display_on_seven_segment(minutes);
+; 0000 002A //                    delay_ms(1000);
+; 0000 002B //                    display_on_seven_segment(seconds);
+; 0000 002C //                    delay_ms(1000);
+; 0000 002D //                    break;
+; 0000 002E //                }
+; 0000 002F //            }
+; 0000 0030 //            break;
+; 0000 0031 //        }
+; 0000 0032 //    }
+; 0000 0033 //
+; 0000 0034 //    // Wait for ON/C key to start countdown
+; 0000 0035     while(1) {
+;PCODE: $00000019 VOL: 0
+; 0000 0036 //        if(read_keypad() == 'c') {
+; 0000 0037 //            countdown_timer(minutes, seconds);
+; 0000 0038 //            break;
+; 0000 0039         sound_buzzer();
+;PCODE: $0000001A VOL: 0
+; 0000 003A         }
 ;PCODE: $0000001B VOL: 0
 ;PCODE: $0000001C VOL: 0
-; 0000 0048 // Place your code here
-; 0000 0049 
-; 0000 004A }
+; 0000 003B //    }
+; 0000 003C //
+; 0000 003D //    // Once countdown finishes, sound buzzer and start LED animation
+; 0000 003E //    sound_buzzer();
+; 0000 003F //    led_animation();
+; 0000 0040 
+; 0000 0041 }
 ;PCODE: $0000001D VOL: 0
 ;PCODE: $0000001E VOL: 0
 ;PCODE: $0000001F VOL: 0
 ;
-;// Timer2 overflow interrupt service routine
-;interrupt [TIM2_OVF] void timer2_ovf_isr(void)
-; 0000 004E {
+;void init() {
+; 0000 0043 void init() {
 ;PCODE: $00000020 VOL: 0
 ;PCODE: $00000021 VOL: 0
-; 0000 004F // Reinitialize Timer2 value
-; 0000 0050 TCNT2=0xB2;
+; 0000 0044     // Initialize ports and pins
+; 0000 0045     // Configure SEVENSEG_PORT, KEYPAD_PORT, BUZZER_PORT, and LED_PORT as required
+; 0000 0046 
+; 0000 0047     DDRB = 0x10000000;
 ;PCODE: $00000022 VOL: 0
 ;PCODE: $00000023 VOL: 0
-; 0000 0051 // Place your code here
-; 0000 0052 
-; 0000 0053 }
+; 0000 0048 
+; 0000 0049     // Set ROWS as outputs and COLS as inputs
+; 0000 004A     DDRA = 0x0F; // Assuming keypad is connected to PORTA pins 0-3 as ROWS
 ;PCODE: $00000024 VOL: 0
 ;PCODE: $00000025 VOL: 0
+; 0000 004B     DDRB = 0x0F; // Assuming keypad is connected to PORTB pins 0-3 as COLS
 ;PCODE: $00000026 VOL: 0
-;// Timer2 output compare interrupt service routine
-;interrupt [TIM2_COMP] void timer2_comp_isr(void)     //segment refresh
-; 0000 0056 {
 ;PCODE: $00000027 VOL: 0
+; 0000 004C     PORTA = 0xF0; // Activate internal pull-ups on PORTA pins 0-3 as ROWS
 ;PCODE: $00000028 VOL: 0
-; 0000 0057 // Place your code here
-; 0000 0058 
-; 0000 0059 }
 ;PCODE: $00000029 VOL: 0
+; 0000 004D     PORTB = 0xF0; // Activate internal pull-ups on PORTB pins 0-3 as COLS
 ;PCODE: $0000002A VOL: 0
 ;PCODE: $0000002B VOL: 0
-;void main(void)
-; 0000 005B {
+; 0000 004E     DDRC = 0xFF; // Assuming seven segment display is connected to PORTC
 ;PCODE: $0000002C VOL: 0
-; 0000 005C // Declare your local variables here
-; 0000 005D int b=0;
-; 0000 005E // Input/Output Ports initialization
-; 0000 005F 
-; 0000 0060 // Function: PORT A,C,D : output, pulldown
-; 0000 0061 DDRA= 0xFF;     DDRC=0xFF;      DDRD=0xFF;
-;	b -> R16,R17
 ;PCODE: $0000002D VOL: 0
+; 0000 004F     DDRB=(1<<DDB7); // Assuming buzzer is connected to pin PB0
 ;PCODE: $0000002E VOL: 0
 ;PCODE: $0000002F VOL: 0
+; 0000 0050     DDRD = 0xFF; // Assuming LEDs are connected to PORTD
 ;PCODE: $00000030 VOL: 0
 ;PCODE: $00000031 VOL: 0
+; 0000 0051 }
 ;PCODE: $00000032 VOL: 0
 ;PCODE: $00000033 VOL: 0
+;
+;char read_keypad() {
+; 0000 0053 char read_keypad() {
 ;PCODE: $00000034 VOL: 0
-; 0000 0062 PORTA= 0x00;    PORTC= 0x00;    PORTD=0x00;
 ;PCODE: $00000035 VOL: 0
+; 0000 0054     // Read input from keypad and return the pressed key
+; 0000 0055     // Define keypad layout (assuming a 4x4 matrix)
+; 0000 0056     char keypad_layout[4][4] = {
+; 0000 0057         {'/', '9', '8', '7'},
+; 0000 0058         {'x', '6', '5', '4'},
+; 0000 0059         {'-', '3', '2', '1'},
+; 0000 005A         {'+', '=', '0', 'c'}
+; 0000 005B     };
+; 0000 005C 
+; 0000 005D     // Loop through each ROW and check for key press
+; 0000 005E     int row = 0, col =0;
+; 0000 005F 
+; 0000 0060     for (row = 0; row < 4; row++) {
 ;PCODE: $00000036 VOL: 0
 ;PCODE: $00000037 VOL: 0
 ;PCODE: $00000038 VOL: 0
 ;PCODE: $00000039 VOL: 0
 ;PCODE: $0000003A VOL: 0
-; 0000 0063 
-; 0000 0064 // Port B initialization
-; 0000 0065 // Function: Bit7=Out Bit6=Out Bit5=Out Bit4=Out Bit3=Oin Bit2=in Bit1=in Bit0=in
-; 0000 0066 DDRB=(1<<DDB7) | (1<<DDB6) | (1<<DDB5) | (1<<DDB4) | (0<<DDB3) | (0<<DDB2) | (0<<DDB1) | (0<<DDB0);
 ;PCODE: $0000003B VOL: 0
+;	keypad_layout -> Y+4
+;	row -> R16,R17
+;	col -> R18,R19
 ;PCODE: $0000003C VOL: 0
-; 0000 0067 // State: Bit7=0 Bit6=0 Bit5=0 Bit4=1 Bit3=1 Bit2=1 Bit1=1 Bit0=1
-; 0000 0068 PORTB=(0<<PORTB7) | (0<<PORTB6) | (0<<PORTB5) | (0<<PORTB4) | (1<<PORTB3) | (1<<PORTB2) | (1<<PORTB1) | (1<<PORTB0);
 ;PCODE: $0000003D VOL: 0
 ;PCODE: $0000003E VOL: 0
-; 0000 0069 
-; 0000 006A 
-; 0000 006B // Timer/Counter 1 initialization
-; 0000 006C TCCR1A=(0<<COM1A1) | (0<<COM1A0) | (0<<COM1B1) | (0<<COM1B0) | (0<<WGM11) | (0<<WGM10);
 ;PCODE: $0000003F VOL: 0
 ;PCODE: $00000040 VOL: 0
-; 0000 006D TCCR1B=(0<<ICNC1) | (0<<ICES1) | (0<<WGM13) | (1<<WGM12) | (1<<CS12) | (0<<CS11) | (0<<CS10);
 ;PCODE: $00000041 VOL: 0
 ;PCODE: $00000042 VOL: 0
-; 0000 006E TCNT1H=0x85;
 ;PCODE: $00000043 VOL: 0
 ;PCODE: $00000044 VOL: 0
-; 0000 006F TCNT1L=0xEE;
 ;PCODE: $00000045 VOL: 0
 ;PCODE: $00000046 VOL: 0
-; 0000 0070 ICR1H=0x00;
 ;PCODE: $00000047 VOL: 0
 ;PCODE: $00000048 VOL: 0
-; 0000 0071 ICR1L=0x00;
+; 0000 0061         // Activate current ROW
+; 0000 0062         PORTA = (PORTA & 0xF0) | ~(1 << row);
 ;PCODE: $00000049 VOL: 0
 ;PCODE: $0000004A VOL: 0
-; 0000 0072 OCR1AH=0x7A;
 ;PCODE: $0000004B VOL: 0
 ;PCODE: $0000004C VOL: 0
-; 0000 0073 OCR1AL=0x11;
 ;PCODE: $0000004D VOL: 0
 ;PCODE: $0000004E VOL: 0
-; 0000 0074 OCR1BH=0x00;
 ;PCODE: $0000004F VOL: 0
 ;PCODE: $00000050 VOL: 0
-; 0000 0075 OCR1BL=0x00;
 ;PCODE: $00000051 VOL: 0
+; 0000 0063 
+; 0000 0064         // Check for key press in current ROW
+; 0000 0065         for (col = 4; col < 8; col++) {
 ;PCODE: $00000052 VOL: 0
-; 0000 0076 
-; 0000 0077 
-; 0000 0078 // Timer/Counter 2 initialization
-; 0000 0079 // Clock source: System Clock
-; 0000 007A // Clock value: 7.813 kHz
-; 0000 007B // Mode: CTC top=OCR2A
-; 0000 007C // OC2 output: Disconnected
-; 0000 007D // Timer Period: 0.128 ms
-; 0000 007E ASSR=0<<AS2;
 ;PCODE: $00000053 VOL: 0
 ;PCODE: $00000054 VOL: 0
-; 0000 007F TCCR2=(0<<PWM2) | (0<<COM21) | (0<<COM20) | (1<<CTC2) | (1<<CS22) | (1<<CS21) | (1<<CS20);
 ;PCODE: $00000055 VOL: 0
 ;PCODE: $00000056 VOL: 0
-; 0000 0080 TCNT2=0xB2;
 ;PCODE: $00000057 VOL: 0
 ;PCODE: $00000058 VOL: 0
-; 0000 0081 OCR2=0x4D;
 ;PCODE: $00000059 VOL: 0
 ;PCODE: $0000005A VOL: 0
-; 0000 0082 
-; 0000 0083 // Timer(s)/Counter(s) Interrupt(s) initialization
-; 0000 0084 TIMSK=(1<<OCIE2) | (1<<TOIE2) | (0<<TICIE1) | (1<<OCIE1A) | (1<<OCIE1B) | (1<<TOIE1) | (0<<OCIE0) | (0<<TOIE0);
+; 0000 0066             if (!(PINB & (1 << col))) {  //PORTB?
 ;PCODE: $0000005B VOL: 0
 ;PCODE: $0000005C VOL: 0
-; 0000 0085 
-; 0000 0086 
-; 0000 0087 // Global enable interrupts
-; 0000 0088 #asm("sei")
 ;PCODE: $0000005D VOL: 0
-	sei
 ;PCODE: $0000005E VOL: 0
-; 0000 0089 
-; 0000 008A while (1)
 ;PCODE: $0000005F VOL: 0
-; 0000 008B       {
-; 0000 008C       // Place your code here
-; 0000 008D       out   = keypad();
 ;PCODE: $00000060 VOL: 0
 ;PCODE: $00000061 VOL: 0
-; 0000 008E       PORTC = ~seg [out];
 ;PCODE: $00000062 VOL: 0
 ;PCODE: $00000063 VOL: 0
 ;PCODE: $00000064 VOL: 0
+; 0000 0067                 // Key pressed, return corresponding character from keypad layout
+; 0000 0068                 return keypad_layout[row][col - 4];
 ;PCODE: $00000065 VOL: 0
 ;PCODE: $00000066 VOL: 0
 ;PCODE: $00000067 VOL: 0
 ;PCODE: $00000068 VOL: 0
 ;PCODE: $00000069 VOL: 0
-; 0000 008F //      LightDancer();
-; 0000 0090       }
 ;PCODE: $0000006A VOL: 0
 ;PCODE: $0000006B VOL: 0
-; 0000 0091 }
 ;PCODE: $0000006C VOL: 0
 ;PCODE: $0000006D VOL: 0
 ;PCODE: $0000006E VOL: 0
-;
-;//	int LightDancer()
-;//	{
-;//		int a;
-;//		char led[]= {
-;//			0b10000000,
-;//			0b01000000,
-;//			0b00100000,
-;//			0b00010000,
-;//			0b00001000,
-;//			0b00000100,
-;//			0b00000010,
-;//			0b00000001};
-;//
-;//		for (a=0;a<=7;a++)
-;//		{
-;//			PORTB=led[a];
-;//			delay_ms(100);
-;//		};
-;//		for (a=6;a>=0;a--)
-;//		{
-;//			PORTC=led[a];
-;//			delay_ms(100);
-;//		};
-;//	}
-;
-;    char keypad()
-; 0000 00AD     {
 ;PCODE: $0000006F VOL: 0
+; 0000 0069             }
+; 0000 006A         }
 ;PCODE: $00000070 VOL: 0
-; 0000 00AE         while(1)
 ;PCODE: $00000071 VOL: 0
-; 0000 00AF         {
-; 0000 00B0            int row=0, col=-1,val=-2;
-; 0000 00B1            for (row = 0; row<4; row++)
 ;PCODE: $00000072 VOL: 0
 ;PCODE: $00000073 VOL: 0
 ;PCODE: $00000074 VOL: 0
 ;PCODE: $00000075 VOL: 0
+; 0000 006B     }
 ;PCODE: $00000076 VOL: 0
 ;PCODE: $00000077 VOL: 0
 ;PCODE: $00000078 VOL: 0
 ;PCODE: $00000079 VOL: 0
 ;PCODE: $0000007A VOL: 0
+; 0000 006C 
+; 0000 006D     // No key pressed, return null character
+; 0000 006E     return '\0';
 ;PCODE: $0000007B VOL: 0
 ;PCODE: $0000007C VOL: 0
 ;PCODE: $0000007D VOL: 0
 ;PCODE: $0000007E VOL: 0
-;	row -> Y+4
-;	col -> Y+2
-;	val -> Y+0
+; 0000 006F }
 ;PCODE: $0000007F VOL: 0
+;
+;void display_on_seven_segment(int number) {
+; 0000 0071 void display_on_seven_segment(int number) {
 ;PCODE: $00000080 VOL: 0
 ;PCODE: $00000081 VOL: 0
+; 0000 0072     // Display the given number on the seven segment display
+; 0000 0073     // Define the segments for each digit (assuming common cathode display)
+; 0000 0074     const int segments[] = {
+; 0000 0075         // 0bGFEDCBA
+; 0000 0076         0x3F, // 0
+; 0000 0077         0x06, // 1
+; 0000 0078         0x5B, // 2
+; 0000 0079         0x4F, // 3
+; 0000 007A         0x66, // 4
+; 0000 007B         0x6D, // 5
+; 0000 007C         0x7D, // 6
+; 0000 007D         0x07, // 7
+; 0000 007E         0x7F, // 8
+; 0000 007F         0x6F // 9
+; 0000 0080     };
+; 0000 0081 
+; 0000 0082     // Extract digits from the number
+; 0000 0083     int digit1 = number / 10;
+; 0000 0084     int digit2 = number % 10;
+; 0000 0085 
+; 0000 0086     // Define the pins connected to the seven segment display
+; 0000 0087 
+; 0000 0088     // Display the first digit
+; 0000 0089     PORTC = segments[digit1];
 ;PCODE: $00000082 VOL: 0
 ;PCODE: $00000083 VOL: 0
 ;PCODE: $00000084 VOL: 0
@@ -332,258 +293,224 @@
 ;PCODE: $00000086 VOL: 0
 ;PCODE: $00000087 VOL: 0
 ;PCODE: $00000088 VOL: 0
-; 0000 00B2            {
-; 0000 00B3            PORTA = ~ref[row];
+;	number -> Y+24
+;	segments -> Y+4
+;	digit1 -> R16,R17
+;	digit2 -> R18,R19
 ;PCODE: $00000089 VOL: 0
 ;PCODE: $0000008A VOL: 0
 ;PCODE: $0000008B VOL: 0
 ;PCODE: $0000008C VOL: 0
 ;PCODE: $0000008D VOL: 0
-; 0000 00B4               if(col0 == 0)
 ;PCODE: $0000008E VOL: 0
 ;PCODE: $0000008F VOL: 0
 ;PCODE: $00000090 VOL: 0
-; 0000 00B5                {
-; 0000 00B6                   while(col0 == 0);
 ;PCODE: $00000091 VOL: 0
 ;PCODE: $00000092 VOL: 0
 ;PCODE: $00000093 VOL: 0
 ;PCODE: $00000094 VOL: 0
 ;PCODE: $00000095 VOL: 0
 ;PCODE: $00000096 VOL: 0
-; 0000 00B7                   col = 0;
+; 0000 008A     // Assume pins C0-C3 are connected to the common cathode/anode of the first digit
+; 0000 008B     // Activate the first digit by setting pins C0-C3 LOW and others HIGH
+; 0000 008C     PORTC |= 0x0F;
 ;PCODE: $00000097 VOL: 0
 ;PCODE: $00000098 VOL: 0
-; 0000 00B8                   break;
 ;PCODE: $00000099 VOL: 0
-; 0000 00B9                }
-; 0000 00BA               if(col1 == 0)
+; 0000 008D 
+; 0000 008E     delay_ms(1); // Adjust delay as needed for display stability
 ;PCODE: $0000009A VOL: 0
 ;PCODE: $0000009B VOL: 0
 ;PCODE: $0000009C VOL: 0
+; 0000 008F 
+; 0000 0090     // Display the second digit
+; 0000 0091     PORTC = segments[digit2];
 ;PCODE: $0000009D VOL: 0
-; 0000 00BB                {
-; 0000 00BC                   while(col1 == 0);
 ;PCODE: $0000009E VOL: 0
 ;PCODE: $0000009F VOL: 0
 ;PCODE: $000000A0 VOL: 0
 ;PCODE: $000000A1 VOL: 0
 ;PCODE: $000000A2 VOL: 0
+; 0000 0092     // Assume pins C4-C7 are connected to the common cathode/anode of the second digit
+; 0000 0093     // Activate the second digit by setting pins C4-C7 LOW and others HIGH
+; 0000 0094     PORTC |= 0xF0;
 ;PCODE: $000000A3 VOL: 0
-; 0000 00BD                   col = 1;
 ;PCODE: $000000A4 VOL: 0
 ;PCODE: $000000A5 VOL: 0
-; 0000 00BE                   break;
+; 0000 0095 
+; 0000 0096     delay_ms(1); // Adjust delay as needed for display stability
 ;PCODE: $000000A6 VOL: 0
-; 0000 00BF                }
-; 0000 00C0                if(col2 == 0)
 ;PCODE: $000000A7 VOL: 0
 ;PCODE: $000000A8 VOL: 0
+; 0000 0097 
+; 0000 0098 }
 ;PCODE: $000000A9 VOL: 0
 ;PCODE: $000000AA VOL: 0
-; 0000 00C1                {
-; 0000 00C2                   while(col2 == 0);
 ;PCODE: $000000AB VOL: 0
 ;PCODE: $000000AC VOL: 0
+;
+;volatile int remaining_seconds;
+;
+;void countdown_timer(int minutes, int seconds) {
+; 0000 009C void countdown_timer(int minutes, int seconds) {
 ;PCODE: $000000AD VOL: 0
 ;PCODE: $000000AE VOL: 0
+; 0000 009D     // Countdown from the given minutes and seconds
+; 0000 009E     // Calculate total seconds
+; 0000 009F     remaining_seconds = minutes * 60 + seconds;
 ;PCODE: $000000AF VOL: 0
+;	minutes -> Y+2
+;	seconds -> Y+0
 ;PCODE: $000000B0 VOL: 0
-; 0000 00C3                   col = 2;
 ;PCODE: $000000B1 VOL: 0
 ;PCODE: $000000B2 VOL: 0
-; 0000 00C4                   break;
 ;PCODE: $000000B3 VOL: 0
-; 0000 00C5                }
-; 0000 00C6               if(col3 == 0)
 ;PCODE: $000000B4 VOL: 0
-;PCODE: $000000B5 VOL: 0
+;PCODE: $000000B5 VOL: 1
+; 0000 00A0 
+; 0000 00A1     // Set up Timer1 for countdown
+; 0000 00A2     TCCR1B |= (1 << CS12) | (1 << CS10); // Set prescaler to 1024
 ;PCODE: $000000B6 VOL: 0
 ;PCODE: $000000B7 VOL: 0
-; 0000 00C7                {
-; 0000 00C8                   while(col3 == 0);
 ;PCODE: $000000B8 VOL: 0
+; 0000 00A3     TCNT1 = 0; // Initialize counter value
 ;PCODE: $000000B9 VOL: 0
 ;PCODE: $000000BA VOL: 0
+; 0000 00A4     OCR1A = 15625; // Timer overflow occurs every second
 ;PCODE: $000000BB VOL: 0
 ;PCODE: $000000BC VOL: 0
+; 0000 00A5     TIMSK |= (1 << OCIE1A); // Enable Timer1 Compare A interrupt
 ;PCODE: $000000BD VOL: 0
-; 0000 00C9                   col = 3;
 ;PCODE: $000000BE VOL: 0
 ;PCODE: $000000BF VOL: 0
-; 0000 00CA                   break;
+; 0000 00A6 
+; 0000 00A7     sei(); // Enable global interrupts
 ;PCODE: $000000C0 VOL: 0
-; 0000 00CB                }
-; 0000 00CC               }
+	sei
 ;PCODE: $000000C1 VOL: 0
+; 0000 00A8 
+; 0000 00A9     while(remaining_seconds > 0) {
 ;PCODE: $000000C2 VOL: 0
-;PCODE: $000000C3 VOL: 0
+;PCODE: $000000C3 VOL: 1
 ;PCODE: $000000C4 VOL: 0
 ;PCODE: $000000C5 VOL: 0
+; 0000 00AA         // Wait for countdown to finish
+; 0000 00AB     }
 ;PCODE: $000000C6 VOL: 0
 ;PCODE: $000000C7 VOL: 0
-; 0000 00CD                if (col != -1) //if key was pressed
+; 0000 00AC }
 ;PCODE: $000000C8 VOL: 0
 ;PCODE: $000000C9 VOL: 0
 ;PCODE: $000000CA VOL: 0
-; 0000 00CE                {
-; 0000 00CF                  val= row*4 + col;
+;
+;// Timer1 Compare A interrupt service routine
+;interrupt [EXT_INT1] void ext_int1_isr(void) {
+; 0000 00AF interrupt [3] void ext_int1_isr(void) {
 ;PCODE: $000000CB VOL: 0
 ;PCODE: $000000CC VOL: 0
-;PCODE: $000000CD VOL: 0
+; 0000 00B0     remaining_seconds--;
+;PCODE: $000000CD VOL: 1
 ;PCODE: $000000CE VOL: 0
 ;PCODE: $000000CF VOL: 0
-; 0000 00D0 //                if (val != 0 && val != 1 && val != 3 && val != 4 && val != 8 && val != 12)
-; 0000 00D1 //                {
-; 0000 00D2 //                   PORTC = ~seg [(row-1)*3 - (col-1)];
-; 0000 00D3 //                }
-; 0000 00D4                 //PORTC = ~seg [val];
-; 0000 00D5                 PIND.0 = 1;
 ;PCODE: $000000D0 VOL: 0
+; 0000 00B1 }
 ;PCODE: $000000D1 VOL: 0
-; 0000 00D6 
-; 0000 00D7                 switch (val) {
 ;PCODE: $000000D2 VOL: 0
-; 0000 00D8                 case 0:
 ;PCODE: $000000D3 VOL: 0
+;
+;void sound_buzzer()
+; 0000 00B4 {
 ;PCODE: $000000D4 VOL: 0
-; 0000 00D9                     input  = 7;
 ;PCODE: $000000D5 VOL: 0
+; 0000 00B5     // Activate the buzzer by setting the corresponding pin HIGH
+; 0000 00B6     PINB.7 = 1;
 ;PCODE: $000000D6 VOL: 0
-; 0000 00DA                 break;
 ;PCODE: $000000D7 VOL: 0
-; 0000 00DB                 case 1:
+; 0000 00B7 
+; 0000 00B8     // Delay for the buzzer sound duration
+; 0000 00B9     delay_ms(200); // Adjust the delay as needed for desired sound duration
 ;PCODE: $000000D8 VOL: 0
 ;PCODE: $000000D9 VOL: 0
 ;PCODE: $000000DA VOL: 0
-; 0000 00DC                     input  = 8;
+; 0000 00BA 
+; 0000 00BB     // Deactivate the buzzer by setting the corresponding pin LOW
+; 0000 00BC     PINB.7 = 0;
 ;PCODE: $000000DB VOL: 0
 ;PCODE: $000000DC VOL: 0
-; 0000 00DD                 break;
+; 0000 00BD }
 ;PCODE: $000000DD VOL: 0
-; 0000 00DE                 case 2:
 ;PCODE: $000000DE VOL: 0
+;
+;void led_animation() {
+; 0000 00BF void led_animation() {
 ;PCODE: $000000DF VOL: 0
 ;PCODE: $000000E0 VOL: 0
-; 0000 00DF                     input  = 9;
+; 0000 00C0     // Start the LED animation
+; 0000 00C1 
+; 0000 00C2     // LED dance pattern
+; 0000 00C3     int pattern[] = {
+; 0000 00C4         0xAA, // Alternating on/off pattern
+; 0000 00C5         0x55 // Inverted alternating on/off pattern
+; 0000 00C6     };
+; 0000 00C7 
+; 0000 00C8     // Loop through the pattern to animate LEDs
+; 0000 00C9     int i = 0;
+; 0000 00CA     for (i = 0; i < sizeof(pattern) / sizeof(pattern[0]); i++) {
 ;PCODE: $000000E1 VOL: 0
 ;PCODE: $000000E2 VOL: 0
-; 0000 00E0                 break;
 ;PCODE: $000000E3 VOL: 0
-; 0000 00E1                 case 4:
 ;PCODE: $000000E4 VOL: 0
 ;PCODE: $000000E5 VOL: 0
 ;PCODE: $000000E6 VOL: 0
-; 0000 00E2                     input  = 4;
 ;PCODE: $000000E7 VOL: 0
 ;PCODE: $000000E8 VOL: 0
-; 0000 00E3                 break;
 ;PCODE: $000000E9 VOL: 0
-; 0000 00E4                 case 5:
 ;PCODE: $000000EA VOL: 0
 ;PCODE: $000000EB VOL: 0
+;	pattern -> Y+2
+;	i -> R16,R17
 ;PCODE: $000000EC VOL: 0
-; 0000 00E5                     input  = 5;
 ;PCODE: $000000ED VOL: 0
 ;PCODE: $000000EE VOL: 0
-; 0000 00E6                 break;
 ;PCODE: $000000EF VOL: 0
-; 0000 00E7                 case 6:
 ;PCODE: $000000F0 VOL: 0
 ;PCODE: $000000F1 VOL: 0
 ;PCODE: $000000F2 VOL: 0
-; 0000 00E8                     input  = 6;
 ;PCODE: $000000F3 VOL: 0
 ;PCODE: $000000F4 VOL: 0
-; 0000 00E9                 break;
 ;PCODE: $000000F5 VOL: 0
-; 0000 00EA                 case 8:
 ;PCODE: $000000F6 VOL: 0
+; 0000 00CB         // Display current pattern on LEDs
+; 0000 00CC         PORTD = pattern[i];
 ;PCODE: $000000F7 VOL: 0
 ;PCODE: $000000F8 VOL: 0
-; 0000 00EB                     input  = 1;
 ;PCODE: $000000F9 VOL: 0
 ;PCODE: $000000FA VOL: 0
-; 0000 00EC                 break;
 ;PCODE: $000000FB VOL: 0
-; 0000 00ED                 case 9:
 ;PCODE: $000000FC VOL: 0
+; 0000 00CD 
+; 0000 00CE         // Delay for animation effect
+; 0000 00CF         delay_ms(100); // Adjust delay as needed for desired animation speed
 ;PCODE: $000000FD VOL: 0
 ;PCODE: $000000FE VOL: 0
-; 0000 00EE                     input  = 2;
 ;PCODE: $000000FF VOL: 0
+; 0000 00D0     }
 ;PCODE: $00000100 VOL: 0
-; 0000 00EF                 break;
 ;PCODE: $00000101 VOL: 0
-; 0000 00F0                 case 10:
 ;PCODE: $00000102 VOL: 0
 ;PCODE: $00000103 VOL: 0
 ;PCODE: $00000104 VOL: 0
-; 0000 00F1                     input  = 3;
+; 0000 00D1 
+; 0000 00D2     // Turn off all LEDs after animation
+; 0000 00D3     PORTD = 0x00;
 ;PCODE: $00000105 VOL: 0
 ;PCODE: $00000106 VOL: 0
-; 0000 00F2                 break;
+; 0000 00D4 }
 ;PCODE: $00000107 VOL: 0
-; 0000 00F3                 case 12:
 ;PCODE: $00000108 VOL: 0
 ;PCODE: $00000109 VOL: 0
 ;PCODE: $0000010A VOL: 0
-; 0000 00F4                     input  = 0;
 ;PCODE: $0000010B VOL: 0
-; 0000 00F5                 break;
 ;PCODE: $0000010C VOL: 0
-; 0000 00F6                }
 ;PCODE: $0000010D VOL: 0
-; 0000 00F7 
-; 0000 00F8                return input;
-;PCODE: $0000010E VOL: 0
-;PCODE: $0000010F VOL: 0
-;PCODE: $00000110 VOL: 0
-; 0000 00F9 
-; 0000 00FA         }
-; 0000 00FB     }
-;PCODE: $00000111 VOL: 0
-;PCODE: $00000112 VOL: 0
-;PCODE: $00000113 VOL: 0
-;PCODE: $00000114 VOL: 0
-; 0000 00FC }
-;PCODE: $00000115 VOL: 0
-;PCODE: $00000116 VOL: 0
 ;
-;//   void detrmine(int c)
-;//    {  int input = 0;
-;//        switch (c) {
-;//        case 0:
-;//            input  = 7;
-;//        break;
-;//        case 1:
-;//            input  = 8;
-;//        break;
-;//        case 2:
-;//            input  = 9;
-;//        break;
-;//        case 4:
-;//            input  = 4;
-;//        break;
-;//        case 5:
-;//            input  = 5;
-;//        break;
-;//        case 6:
-;//            input  = 6;
-;//        break;
-;//        case 8:
-;//            input  = 1;
-;//        break;
-;//        case 9:
-;//            input  = 2;
-;//        break;
-;//        case 10:
-;//            input  = 3;
-;//        break;
-;//        case 12:
-;//            input  = 0;
-;//        break;
-;//        return input;
-;//        };
-;//
-;//    }

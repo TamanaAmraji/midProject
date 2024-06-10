@@ -1,289 +1,213 @@
-/*******************************************************
-This program was created by the
-CodeWizardAVR V3.14 Advanced
-Automatic Program Generator
-© Copyright 1998-2014 Pavel Haiduc, HP InfoTech s.r.l.
-http://www.hpinfotech.com
-
-Project : 
-Version : 
-Date    : 5/27/2024
-Author  : 
-Company : 
-Comments: 
-
-
-Chip type               : ATmega32
-Program type            : Application
-AVR Core Clock frequency: 8.000000 MHz
-Memory model            : Small
-External RAM size       : 0
-Data Stack size         : 512
-*******************************************************/
-
 #include <mega32.h>
 #include <delay.h>
+#include <interrupt.h>
 
-// Declare your global variables here
-int seg[]={0x40,0x79,0x24,0x30,0x19,0x12,0x02,0x78,0x00,0x10}; 
-//int seg[]={0x78,0x00,0x10,0,0x19,0x12,0x02,0,0x79,0x24,0x30,0,0,0x40,0,0};  //7,8,9,/,4,5,6,x,1,2,3,-,c,0,=,+
-char out;
-char determine();
-int input=0;
-char ref[]= {
-            0b00000001,
-            0b00000010,
-            0b00000100,
-            0b00001000
-            };                      //for refreshing rows
-char keys[]= {                      //based on keypad model we use
-              '/', '9', '8', '7',
-              'x', '6', '5', '4',
-              '-', '3', '2', '1',
-              '+', '=', '0', 'c'
-              };
-char keypad();
-int LightDancer();
+// Define pins for seven segment display, keypad, buzzer, and LEDs
+#define SEVENSEG_PORT PORTA
+#define KEYPAD_PORT PORTB
+#define BUZZER_PORT PORTC
+#define LED_PORT PORTD
 
-#define col0    PINB.0
-#define col1    PINB.1
-#define col2    PINB.2
-#define col3    PINB.3  
-            
-// Timer1 overflow interrupt service routine
-interrupt [TIM1_OVF] void timer1_ovf_isr(void)
+// Function prototypes
+void init();
+char read_keypad();
+void display_on_seven_segment(int number);
+void countdown_timer(int minutes, int seconds);
+void sound_buzzer();
+void led_animation();
+
+void main() 
 {
-// Reinitialize Timer1 value
-TCNT1H=0x85EE >> 8;
-TCNT1L=0x85EE & 0xff;
-// Place your code here
-}
-
-// Timer1 output compare A interrupt service routine
-interrupt [TIM1_COMPA] void timer1_compa_isr(void)
-{
-// Place your code here
-
-}
-
-// Timer1 output compare B interrupt service routine
-interrupt [TIM1_COMPB] void timer1_compb_isr(void)
-{
-// Place your code here
-
-}
-
-// Timer2 overflow interrupt service routine
-interrupt [TIM2_OVF] void timer2_ovf_isr(void)
-{
-// Reinitialize Timer2 value
-TCNT2=0xB2;
-// Place your code here
-
-}
-// Timer2 output compare interrupt service routine
-interrupt [TIM2_COMP] void timer2_comp_isr(void)     //segment refresh
-{
-// Place your code here  
-     
-}   
-void main(void)
-{
-// Declare your local variables here
-int b=0;
-// Input/Output Ports initialization
-
-// Function: PORT A,C,D : output, pulldown
-DDRA= 0xFF;     DDRC=0xFF;      DDRD=0xFF;
-PORTA= 0x00;    PORTC= 0x00;    PORTD=0x00; 
-
-// Port B initialization
-// Function: Bit7=Out Bit6=Out Bit5=Out Bit4=Out Bit3=Oin Bit2=in Bit1=in Bit0=in 
-DDRB=(1<<DDB7) | (1<<DDB6) | (1<<DDB5) | (1<<DDB4) | (0<<DDB3) | (0<<DDB2) | (0<<DDB1) | (0<<DDB0);
-// State: Bit7=0 Bit6=0 Bit5=0 Bit4=1 Bit3=1 Bit2=1 Bit1=1 Bit0=1 
-PORTB=(0<<PORTB7) | (0<<PORTB6) | (0<<PORTB5) | (0<<PORTB4) | (1<<PORTB3) | (1<<PORTB2) | (1<<PORTB1) | (1<<PORTB0);
-
-
-// Timer/Counter 1 initialization
-TCCR1A=(0<<COM1A1) | (0<<COM1A0) | (0<<COM1B1) | (0<<COM1B0) | (0<<WGM11) | (0<<WGM10);
-TCCR1B=(0<<ICNC1) | (0<<ICES1) | (0<<WGM13) | (1<<WGM12) | (1<<CS12) | (0<<CS11) | (0<<CS10);
-TCNT1H=0x85;
-TCNT1L=0xEE;
-ICR1H=0x00;
-ICR1L=0x00;
-OCR1AH=0x7A;
-OCR1AL=0x11;
-OCR1BH=0x00;
-OCR1BL=0x00;
-
-
-// Timer/Counter 2 initialization
-// Clock source: System Clock
-// Clock value: 7.813 kHz
-// Mode: CTC top=OCR2A
-// OC2 output: Disconnected
-// Timer Period: 0.128 ms
-ASSR=0<<AS2;
-TCCR2=(0<<PWM2) | (0<<COM21) | (0<<COM20) | (1<<CTC2) | (1<<CS22) | (1<<CS21) | (1<<CS20);
-TCNT2=0xB2;
-OCR2=0x4D;
-
-// Timer(s)/Counter(s) Interrupt(s) initialization
-TIMSK=(1<<OCIE2) | (1<<TOIE2) | (0<<TICIE1) | (1<<OCIE1A) | (1<<OCIE1B) | (1<<TOIE1) | (0<<OCIE0) | (0<<TOIE0);
-
-
-// Global enable interrupts
-#asm("sei")
-
-while (1)
-      {       
-      // Place your code here 
-      out   = keypad();  
-      PORTC = ~seg [out];
-//      LightDancer();
-      }
-}
-
-//	int LightDancer()
-//	{
-//		int a;
-//		char led[]= {
-//			0b10000000,
-//			0b01000000,
-//			0b00100000,
-//			0b00010000,
-//			0b00001000,
-//			0b00000100,
-//			0b00000010,
-//			0b00000001};
-//				
-//		for (a=0;a<=7;a++)
-//		{
-//			PORTB=led[a];
-//			delay_ms(100);
-//		};
-//		for (a=6;a>=0;a--)
-//		{
-//			PORTC=led[a];
-//			delay_ms(100);
-//		};
-//	}  
-    
-    char keypad()
-    {
-        while(1)
-        {
-           int row=0, col=-1,val=-2;
-           for (row = 0; row<4; row++)
-           {
-           PORTA = ~ref[row];
-              if(col0 == 0)
-               {  
-                  while(col0 == 0);
-                  col = 0;  
-                  break;                      
-               }  
-              if(col1 == 0)
-               { 
-                  while(col1 == 0);
-                  col = 1;
-                  break;   
-               } 
-               if(col2 == 0)
-               {
-                  while(col2 == 0);
-                  col = 2;
-                  break;
-               }
-              if(col3 == 0)
-               {
-                  while(col3 == 0);
-                  col = 3;
-                  break;
-               } 
-              }  
-               if (col != -1) //if key was pressed
-               {
-                 val= row*4 + col;     
-//                if (val != 0 && val != 1 && val != 3 && val != 4 && val != 8 && val != 12)
-//                {
-//                   PORTC = ~seg [(row-1)*3 - (col-1)]; 
-//                }     
-                //PORTC = ~seg [val]; 
-                PIND.0 = 1;   
-                
-                switch (val) {
-                case 0: 
-                    input  = 7;
-                break; 
-                case 1: 
-                    input  = 8;
-                break; 
-                case 2: 
-                    input  = 9;
-                break;
-                case 4: 
-                    input  = 4;
-                break; 
-                case 5: 
-                    input  = 5;
-                break;    
-                case 6: 
-                    input  = 6; 
-                break;
-                case 8: 
-                    input  = 1;     
-                break; 
-                case 9: 
-                    input  = 2;
-                break; 
-                case 10: 
-                    input  = 3;
-                break;    
-                case 12: 
-                    input  = 0;
-                break;
-               }  
-               
-               return input;
-
-        }
-    } 
-}
-    
-//   void detrmine(int c)
-//    {  int input = 0;
-//        switch (c) {
-//        case 0: 
-//            input  = 7;
-//        break; 
-//        case 1: 
-//            input  = 8;
-//        break; 
-//        case 2: 
-//            input  = 9;
-//        break;
-//        case 4: 
-//            input  = 4;
-//        break; 
-//        case 5: 
-//            input  = 5;
-//        break;    
-//        case 6: 
-//            input  = 6; 
-//        break;
-//        case 8: 
-//            input  = 1;     
-//        break; 
-//        case 9: 
-//            input  = 2;
-//        break; 
-//        case 10: 
-//            input  = 3;
-//        break;    
-//        case 12: 
-//            input  = 0;
-//        break;
-//        return input;
-//        };
+//    int minutes = 0,seconds = 0;
+//    char key;
+//    
+    init();
+//    // Read minutes input from keypad
+//    while(1) {
+//        key = read_keypad();
+//        if(key >= '0' && key <= '9') {
+//            minutes = minutes * 10 + (key - '0');
+//            display_on_seven_segment(minutes);
+//        }
+//        else if(key == '+') {
+//            // Read seconds input from keypad
+//            while(1) {
+//                key = read_keypad();
+//                if(key >= '0' && key <= '9') {
+//                    seconds = seconds * 10 + (key - '0');
+//                    display_on_seven_segment(seconds);
+//                }
+//                else if(key == '=') {
+//                    display_on_seven_segment(minutes);
+//                    delay_ms(1000);
+//                    display_on_seven_segment(seconds);
+//                    delay_ms(1000);
+//                    break;
+//                }
+//            }
+//            break;
+//        }
 //    }
+//    
+//    // Wait for ON/C key to start countdown
+    while(1) {
+//        if(read_keypad() == 'c') {
+//            countdown_timer(minutes, seconds);
+//            break;
+        sound_buzzer();
+        }
+//    }
+//    
+//    // Once countdown finishes, sound buzzer and start LED animation
+//    sound_buzzer();
+//    led_animation();
+    
+}
+
+void init() {
+    // Initialize ports and pins
+    // Configure SEVENSEG_PORT, KEYPAD_PORT, BUZZER_PORT, and LED_PORT as required 
+    
+    DDRB = 0x10000000;
+    
+    // Set ROWS as outputs and COLS as inputs
+    DDRA = 0x0F; // Assuming keypad is connected to PORTA pins 0-3 as ROWS
+    DDRB = 0x0F; // Assuming keypad is connected to PORTB pins 0-3 as COLS
+    PORTA = 0xF0; // Activate internal pull-ups on PORTA pins 0-3 as ROWS    
+    PORTB = 0xF0; // Activate internal pull-ups on PORTB pins 0-3 as COLS    
+    DDRC = 0xFF; // Assuming seven segment display is connected to PORTC  
+    DDRB=(1<<DDB7); // Assuming buzzer is connected to pin PB0
+    DDRD = 0xFF; // Assuming LEDs are connected to PORTD
+}
+
+char read_keypad() {
+    // Read input from keypad and return the pressed key
+    // Define keypad layout (assuming a 4x4 matrix)
+    char keypad_layout[4][4] = {
+        {'/', '9', '8', '7'},
+        {'x', '6', '5', '4'},
+        {'-', '3', '2', '1'},
+        {'+', '=', '0', 'c'}
+    };
+
+    // Loop through each ROW and check for key press 
+    int row = 0, col =0;
+
+    for (row = 0; row < 4; row++) {
+        // Activate current ROW
+        PORTA = (PORTA & 0xF0) | ~(1 << row);
+
+        // Check for key press in current ROW
+        for (col = 4; col < 8; col++) {
+            if (!(PINB & (1 << col))) {  //PORTB?
+                // Key pressed, return corresponding character from keypad layout
+                return keypad_layout[row][col - 4];
+            }
+        }
+    }
+
+    // No key pressed, return null character
+    return '\0';
+}
+
+void display_on_seven_segment(int number) {
+    // Display the given number on the seven segment display 
+    // Define the segments for each digit (assuming common cathode display)
+    const int segments[] = {
+        // 0bGFEDCBA
+        0x3F, // 0
+        0x06, // 1
+        0x5B, // 2
+        0x4F, // 3
+        0x66, // 4
+        0x6D, // 5
+        0x7D, // 6
+        0x07, // 7
+        0x7F, // 8
+        0x6F // 9
+    };
+
+    // Extract digits from the number
+    int digit1 = number / 10;
+    int digit2 = number % 10;
+
+    // Define the pins connected to the seven segment display
+
+    // Display the first digit
+    PORTC = segments[digit1];
+    // Assume pins C0-C3 are connected to the common cathode/anode of the first digit
+    // Activate the first digit by setting pins C0-C3 LOW and others HIGH
+    PORTC |= 0x0F;
+
+    delay_ms(1); // Adjust delay as needed for display stability
+
+    // Display the second digit
+    PORTC = segments[digit2];
+    // Assume pins C4-C7 are connected to the common cathode/anode of the second digit
+    // Activate the second digit by setting pins C4-C7 LOW and others HIGH
+    PORTC |= 0xF0;
+
+    delay_ms(1); // Adjust delay as needed for display stability
+     
+}
+
+volatile int remaining_seconds;
+
+void countdown_timer(int minutes, int seconds) {
+    // Countdown from the given minutes and seconds
+    // Calculate total seconds
+    remaining_seconds = minutes * 60 + seconds;
+
+    // Set up Timer1 for countdown
+    TCCR1B |= (1 << CS12) | (1 << CS10); // Set prescaler to 1024
+    TCNT1 = 0; // Initialize counter value
+    OCR1A = 15625; // Timer overflow occurs every second
+    TIMSK |= (1 << OCIE1A); // Enable Timer1 Compare A interrupt
+
+    sei(); // Enable global interrupts
+
+    while(remaining_seconds > 0) {
+        // Wait for countdown to finish
+    }
+}
+
+// Timer1 Compare A interrupt service routine
+interrupt [EXT_INT1] void ext_int1_isr(void) {
+    remaining_seconds--;
+}
+
+void sound_buzzer() 
+{
+    // Activate the buzzer by setting the corresponding pin HIGH
+    PINB.7 = 1;
+
+    // Delay for the buzzer sound duration
+    delay_ms(200); // Adjust the delay as needed for desired sound duration
+
+    // Deactivate the buzzer by setting the corresponding pin LOW
+    PINB.7 = 0;
+}
+
+void led_animation() {
+    // Start the LED animation 
+
+    // LED dance pattern
+    int pattern[] = {
+        0xAA, // Alternating on/off pattern
+        0x55 // Inverted alternating on/off pattern
+    };
+
+    // Loop through the pattern to animate LEDs    
+    int i = 0;
+    for (i = 0; i < sizeof(pattern) / sizeof(pattern[0]); i++) {
+        // Display current pattern on LEDs
+        PORTD = pattern[i];
+
+        // Delay for animation effect
+        delay_ms(100); // Adjust delay as needed for desired animation speed
+    }
+
+    // Turn off all LEDs after animation
+    PORTD = 0x00;
+}
+

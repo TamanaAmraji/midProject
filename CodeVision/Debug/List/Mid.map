@@ -1,8 +1,7 @@
 RAM Allocation [bytes]
 Variable                                                                          Address   Size
 ------------------------------------------------------------------------------------------------
-seg                                                                               0x0260      20
-ref                                                                               0x0274       4
+remaining_seconds                                                                 0x0260       2
 
 EEPROM Allocation [bytes]
 Variable                                                                          Address   Size
@@ -11,16 +10,11 @@ Variable                                                                        
 Register Allocation
 Variable                                                                          Register  Size
 ------------------------------------------------------------------------------------------------
-out                                                                               R5           1
-input                                                                             R6,R7        2
 
 FLASH Allocation [words]
 Function                                                                          Address   Size
 ------------------------------------------------------------------------------------------------
-timer1_ovf_isr                                                                    0x00076      6
-timer1_compa_isr                                                                  0x0007C      1
-timer1_compb_isr                                                                  0x0007D      1
-timer2_ovf_isr                                                                    0x0007E      5
-timer2_comp_isr                                                                   0x00083      1
-main                                                                              0x00084     56
-keypad                                                                            0x000BC    161
+main                                                                              0x00057      4
+init                                                                              0x0005B     15
+ext_int1_isr                                                                      0x0006A     20
+sound_buzzer                                                                      0x0007E      7

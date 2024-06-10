@@ -1084,11 +1084,6 @@ __DELAY_USW_LOOP:
 	ADD  R31,R0
 	.ENDM
 
-;NAME DEFINITIONS FOR GLOBAL VARIABLES ALLOCATED TO REGISTERS
-	.DEF _out=R5
-	.DEF _input=R6
-	.DEF _input_msb=R7
-
 	.CSEG
 	.ORG 0x00
 
@@ -1098,14 +1093,14 @@ __START_OF_CODE:
 ;INTERRUPT VECTORS
 	JMP  __RESET
 	JMP  0x00
+	JMP  _ext_int1_isr
 	JMP  0x00
 	JMP  0x00
-	JMP  _timer2_comp_isr
-	JMP  _timer2_ovf_isr
 	JMP  0x00
-	JMP  _timer1_compa_isr
-	JMP  _timer1_compb_isr
-	JMP  _timer1_ovf_isr
+	JMP  0x00
+	JMP  0x00
+	JMP  0x00
+	JMP  0x00
 	JMP  0x00
 	JMP  0x00
 	JMP  0x00
@@ -1118,38 +1113,13 @@ __START_OF_CODE:
 	JMP  0x00
 	JMP  0x00
 
-;GLOBAL REGISTER VARIABLES INITIALIZATION
-__REG_VARS:
-	.DB  0x0,0x0
-
-_0x3:
-	.DB  0x40,0x0,0x79,0x0,0x24,0x0,0x30,0x0
-	.DB  0x19,0x0,0x12,0x0,0x2,0x0,0x78,0x0
-	.DB  0x0,0x0,0x10
-_0x4:
-	.DB  0x1,0x2,0x4,0x8
-_0x5:
+_0x8:
 	.DB  0x2F,0x39,0x38,0x37,0x78,0x36,0x35,0x34
 	.DB  0x2D,0x33,0x32,0x31,0x2B,0x3D,0x30,0x63
-
-__GLOBAL_INI_TBL:
-	.DW  0x02
-	.DW  0x06
-	.DW  __REG_VARS*2
-
-	.DW  0x13
-	.DW  _seg
-	.DW  _0x3*2
-
-	.DW  0x04
-	.DW  _ref
-	.DW  _0x4*2
-
-_0xFFFFFFFF:
-	.DW  0
-
-#define __GLOBAL_INI_TBL_PRESENT 1
-
+_0x10:
+	.DB  0x3F,0x0,0x6,0x0,0x5B,0x0,0x4F,0x0
+	.DB  0x66,0x0,0x6D,0x0,0x7D,0x0,0x7,0x0
+	.DB  0x7F,0x0,0x6F,0x0
 __RESET:
 	CLI
 	CLR  R30
@@ -1180,29 +1150,6 @@ __CLEAR_SRAM:
 	SBIW R24,1
 	BRNE __CLEAR_SRAM
 
-;GLOBAL VARIABLES INITIALIZATION
-	LDI  R30,LOW(__GLOBAL_INI_TBL*2)
-	LDI  R31,HIGH(__GLOBAL_INI_TBL*2)
-__GLOBAL_INI_NEXT:
-	LPM  R24,Z+
-	LPM  R25,Z+
-	SBIW R24,0
-	BREQ __GLOBAL_INI_END
-	LPM  R26,Z+
-	LPM  R27,Z+
-	LPM  R0,Z+
-	LPM  R1,Z+
-	MOVW R22,R30
-	MOVW R30,R0
-__GLOBAL_INI_LOOP:
-	LPM  R0,Z+
-	ST   X+,R0
-	SBIW R24,1
-	BRNE __GLOBAL_INI_LOOP
-	MOVW R30,R22
-	RJMP __GLOBAL_INI_NEXT
-__GLOBAL_INI_END:
-
 ;HARDWARE STACK POINTER INITIALIZATION
 	LDI  R30,LOW(__SRAM_END-__HEAP_SIZE)
 	OUT  SPL,R30
@@ -1222,29 +1169,6 @@ __GLOBAL_INI_END:
 	.ORG 0x260
 
 	.CSEG
-;/*******************************************************
-;This program was created by the
-;CodeWizardAVR V3.14 Advanced
-;Automatic Program Generator
-;© Copyright 1998-2014 Pavel Haiduc, HP InfoTech s.r.l.
-;http://www.hpinfotech.com
-;
-;Project :
-;Version :
-;Date    : 5/27/2024
-;Author  :
-;Company :
-;Comments:
-;
-;
-;Chip type               : ATmega32
-;Program type            : Application
-;AVR Core Clock frequency: 8.000000 MHz
-;Memory model            : Small
-;External RAM size       : 0
-;Data Stack size         : 512
-;*******************************************************/
-;
 ;#include <mega32.h>
 	#ifndef __SLEEP_DEFINED__
 	#define __SLEEP_DEFINED__
@@ -1258,570 +1182,314 @@ __GLOBAL_INI_END:
 	.SET power_ctrl_reg=mcucr
 	#endif
 ;#include <delay.h>
-;
-;// Declare your global variables here
-;int seg[]={0x40,0x79,0x24,0x30,0x19,0x12,0x02,0x78,0x00,0x10};
-
-	.DSEG
-;//int seg[]={0x78,0x00,0x10,0,0x19,0x12,0x02,0,0x79,0x24,0x30,0,0,0x40,0,0};  //7,8,9,/,4,5,6,x,1,2,3,-,c,0,=,+
-;char out;
-;char determine();
-;int input=0;
-;char ref[]= {
-;            0b00000001,
-;            0b00000010,
-;            0b00000100,
-;            0b00001000
-;            };                      //for refreshing rows
-;char keys[]= {                      //based on keypad model we use
-;              '/', '9', '8', '7',
-;              'x', '6', '5', '4',
-;              '-', '3', '2', '1',
-;              '+', '=', '0', 'c'
-;              };
-;char keypad();
-;int LightDancer();
-;
-;#define col0    PINB.0
-;#define col1    PINB.1
-;#define col2    PINB.2
-;#define col3    PINB.3
-;
-;// Timer1 overflow interrupt service routine
-;interrupt [TIM1_OVF] void timer1_ovf_isr(void)
-; 0000 0037 {
+;#include <interrupt.h>
+;	flags -> R17
 
 	.CSEG
-_timer1_ovf_isr:
-; .FSTART _timer1_ovf_isr
-	ST   -Y,R30
-; 0000 0038 // Reinitialize Timer1 value
-; 0000 0039 TCNT1H=0x85EE >> 8;
-	LDI  R30,LOW(133)
-	OUT  0x2D,R30
-; 0000 003A TCNT1L=0x85EE & 0xff;
-	LDI  R30,LOW(238)
-	OUT  0x2C,R30
-; 0000 003B // Place your code here
-; 0000 003C }
-	RJMP _0x30
-; .FEND
 ;
-;// Timer1 output compare A interrupt service routine
-;interrupt [TIM1_COMPA] void timer1_compa_isr(void)
-; 0000 0040 {
-_timer1_compa_isr:
-; .FSTART _timer1_compa_isr
-; 0000 0041 // Place your code here
-; 0000 0042 
-; 0000 0043 }
-	RETI
-; .FEND
+;// Define pins for seven segment display, keypad, buzzer, and LEDs
+;#define SEVENSEG_PORT PORTA
+;#define KEYPAD_PORT PORTB
+;#define BUZZER_PORT PORTC
+;#define LED_PORT PORTD
 ;
-;// Timer1 output compare B interrupt service routine
-;interrupt [TIM1_COMPB] void timer1_compb_isr(void)
-; 0000 0047 {
-_timer1_compb_isr:
-; .FSTART _timer1_compb_isr
-; 0000 0048 // Place your code here
-; 0000 0049 
-; 0000 004A }
-	RETI
-; .FEND
+;// Function prototypes
+;void init();
+;char read_keypad();
+;void display_on_seven_segment(int number);
+;void countdown_timer(int minutes, int seconds);
+;void sound_buzzer();
+;void led_animation();
 ;
-;// Timer2 overflow interrupt service routine
-;interrupt [TIM2_OVF] void timer2_ovf_isr(void)
-; 0000 004E {
-_timer2_ovf_isr:
-; .FSTART _timer2_ovf_isr
-	ST   -Y,R30
-; 0000 004F // Reinitialize Timer2 value
-; 0000 0050 TCNT2=0xB2;
-	LDI  R30,LOW(178)
-	OUT  0x24,R30
-; 0000 0051 // Place your code here
-; 0000 0052 
-; 0000 0053 }
-_0x30:
-	LD   R30,Y+
-	RETI
-; .FEND
-;// Timer2 output compare interrupt service routine
-;interrupt [TIM2_COMP] void timer2_comp_isr(void)     //segment refresh
-; 0000 0056 {
-_timer2_comp_isr:
-; .FSTART _timer2_comp_isr
-; 0000 0057 // Place your code here
-; 0000 0058 
-; 0000 0059 }
-	RETI
-; .FEND
-;void main(void)
-; 0000 005B {
+;void main()
+; 0000 0014 {
 _main:
 ; .FSTART _main
-; 0000 005C // Declare your local variables here
-; 0000 005D int b=0;
-; 0000 005E // Input/Output Ports initialization
-; 0000 005F 
-; 0000 0060 // Function: PORT A,C,D : output, pulldown
-; 0000 0061 DDRA= 0xFF;     DDRC=0xFF;      DDRD=0xFF;
-;	b -> R16,R17
-	__GETWRN 16,17,0
-	LDI  R30,LOW(255)
-	OUT  0x1A,R30
-	OUT  0x14,R30
-	OUT  0x11,R30
-; 0000 0062 PORTA= 0x00;    PORTC= 0x00;    PORTD=0x00;
+; 0000 0015 //    int minutes = 0,seconds = 0;
+; 0000 0016 //    char key;
+; 0000 0017 //
+; 0000 0018     init();
+	RCALL _init
+; 0000 0019 //    // Read minutes input from keypad
+; 0000 001A //    while(1) {
+; 0000 001B //        key = read_keypad();
+; 0000 001C //        if(key >= '0' && key <= '9') {
+; 0000 001D //            minutes = minutes * 10 + (key - '0');
+; 0000 001E //            display_on_seven_segment(minutes);
+; 0000 001F //        }
+; 0000 0020 //        else if(key == '+') {
+; 0000 0021 //            // Read seconds input from keypad
+; 0000 0022 //            while(1) {
+; 0000 0023 //                key = read_keypad();
+; 0000 0024 //                if(key >= '0' && key <= '9') {
+; 0000 0025 //                    seconds = seconds * 10 + (key - '0');
+; 0000 0026 //                    display_on_seven_segment(seconds);
+; 0000 0027 //                }
+; 0000 0028 //                else if(key == '=') {
+; 0000 0029 //                    display_on_seven_segment(minutes);
+; 0000 002A //                    delay_ms(1000);
+; 0000 002B //                    display_on_seven_segment(seconds);
+; 0000 002C //                    delay_ms(1000);
+; 0000 002D //                    break;
+; 0000 002E //                }
+; 0000 002F //            }
+; 0000 0030 //            break;
+; 0000 0031 //        }
+; 0000 0032 //    }
+; 0000 0033 //
+; 0000 0034 //    // Wait for ON/C key to start countdown
+; 0000 0035     while(1) {
+_0x4:
+; 0000 0036 //        if(read_keypad() == 'c') {
+; 0000 0037 //            countdown_timer(minutes, seconds);
+; 0000 0038 //            break;
+; 0000 0039         sound_buzzer();
+	RCALL _sound_buzzer
+; 0000 003A         }
+	RJMP _0x4
+; 0000 003B //    }
+; 0000 003C //
+; 0000 003D //    // Once countdown finishes, sound buzzer and start LED animation
+; 0000 003E //    sound_buzzer();
+; 0000 003F //    led_animation();
+; 0000 0040 
+; 0000 0041 }
+_0x7:
+	RJMP _0x7
+; .FEND
+;
+;void init() {
+; 0000 0043 void init() {
+_init:
+; .FSTART _init
+; 0000 0044     // Initialize ports and pins
+; 0000 0045     // Configure SEVENSEG_PORT, KEYPAD_PORT, BUZZER_PORT, and LED_PORT as required
+; 0000 0046 
+; 0000 0047     DDRB = 0x10000000;
 	LDI  R30,LOW(0)
-	OUT  0x1B,R30
-	OUT  0x15,R30
-	OUT  0x12,R30
-; 0000 0063 
-; 0000 0064 // Port B initialization
-; 0000 0065 // Function: Bit7=Out Bit6=Out Bit5=Out Bit4=Out Bit3=Oin Bit2=in Bit1=in Bit0=in
-; 0000 0066 DDRB=(1<<DDB7) | (1<<DDB6) | (1<<DDB5) | (1<<DDB4) | (0<<DDB3) | (0<<DDB2) | (0<<DDB1) | (0<<DDB0);
-	LDI  R30,LOW(240)
 	OUT  0x17,R30
-; 0000 0067 // State: Bit7=0 Bit6=0 Bit5=0 Bit4=1 Bit3=1 Bit2=1 Bit1=1 Bit0=1
-; 0000 0068 PORTB=(0<<PORTB7) | (0<<PORTB6) | (0<<PORTB5) | (0<<PORTB4) | (1<<PORTB3) | (1<<PORTB2) | (1<<PORTB1) | (1<<PORTB0);
+; 0000 0048 
+; 0000 0049     // Set ROWS as outputs and COLS as inputs
+; 0000 004A     DDRA = 0x0F; // Assuming keypad is connected to PORTA pins 0-3 as ROWS
 	LDI  R30,LOW(15)
-	OUT  0x18,R30
-; 0000 0069 
-; 0000 006A 
-; 0000 006B // Timer/Counter 1 initialization
-; 0000 006C TCCR1A=(0<<COM1A1) | (0<<COM1A0) | (0<<COM1B1) | (0<<COM1B0) | (0<<WGM11) | (0<<WGM10);
-	LDI  R30,LOW(0)
-	OUT  0x2F,R30
-; 0000 006D TCCR1B=(0<<ICNC1) | (0<<ICES1) | (0<<WGM13) | (1<<WGM12) | (1<<CS12) | (0<<CS11) | (0<<CS10);
-	LDI  R30,LOW(12)
-	OUT  0x2E,R30
-; 0000 006E TCNT1H=0x85;
-	LDI  R30,LOW(133)
-	OUT  0x2D,R30
-; 0000 006F TCNT1L=0xEE;
-	LDI  R30,LOW(238)
-	OUT  0x2C,R30
-; 0000 0070 ICR1H=0x00;
-	LDI  R30,LOW(0)
-	OUT  0x27,R30
-; 0000 0071 ICR1L=0x00;
-	OUT  0x26,R30
-; 0000 0072 OCR1AH=0x7A;
-	LDI  R30,LOW(122)
-	OUT  0x2B,R30
-; 0000 0073 OCR1AL=0x11;
-	LDI  R30,LOW(17)
-	OUT  0x2A,R30
-; 0000 0074 OCR1BH=0x00;
-	LDI  R30,LOW(0)
-	OUT  0x29,R30
-; 0000 0075 OCR1BL=0x00;
-	OUT  0x28,R30
-; 0000 0076 
-; 0000 0077 
-; 0000 0078 // Timer/Counter 2 initialization
-; 0000 0079 // Clock source: System Clock
-; 0000 007A // Clock value: 7.813 kHz
-; 0000 007B // Mode: CTC top=OCR2A
-; 0000 007C // OC2 output: Disconnected
-; 0000 007D // Timer Period: 0.128 ms
-; 0000 007E ASSR=0<<AS2;
-	OUT  0x22,R30
-; 0000 007F TCCR2=(0<<PWM2) | (0<<COM21) | (0<<COM20) | (1<<CTC2) | (1<<CS22) | (1<<CS21) | (1<<CS20);
-	LDI  R30,LOW(15)
-	OUT  0x25,R30
-; 0000 0080 TCNT2=0xB2;
-	LDI  R30,LOW(178)
-	OUT  0x24,R30
-; 0000 0081 OCR2=0x4D;
-	LDI  R30,LOW(77)
-	OUT  0x23,R30
-; 0000 0082 
-; 0000 0083 // Timer(s)/Counter(s) Interrupt(s) initialization
-; 0000 0084 TIMSK=(1<<OCIE2) | (1<<TOIE2) | (0<<TICIE1) | (1<<OCIE1A) | (1<<OCIE1B) | (1<<TOIE1) | (0<<OCIE0) | (0<<TOIE0);
-	LDI  R30,LOW(220)
-	OUT  0x39,R30
-; 0000 0085 
-; 0000 0086 
-; 0000 0087 // Global enable interrupts
-; 0000 0088 #asm("sei")
-	sei
-; 0000 0089 
-; 0000 008A while (1)
-_0x6:
-; 0000 008B       {
-; 0000 008C       // Place your code here
-; 0000 008D       out   = keypad();
-	RCALL _keypad
-	MOV  R5,R30
-; 0000 008E       PORTC = ~seg [out];
-	LDI  R26,LOW(_seg)
-	LDI  R27,HIGH(_seg)
-	LDI  R31,0
-	LSL  R30
-	ROL  R31
-	ADD  R26,R30
-	ADC  R27,R31
-	LD   R30,X
-	COM  R30
-	OUT  0x15,R30
-; 0000 008F //      LightDancer();
-; 0000 0090       }
-	RJMP _0x6
-; 0000 0091 }
-_0x9:
-	RJMP _0x9
-; .FEND
-;
-;//	int LightDancer()
-;//	{
-;//		int a;
-;//		char led[]= {
-;//			0b10000000,
-;//			0b01000000,
-;//			0b00100000,
-;//			0b00010000,
-;//			0b00001000,
-;//			0b00000100,
-;//			0b00000010,
-;//			0b00000001};
-;//
-;//		for (a=0;a<=7;a++)
-;//		{
-;//			PORTB=led[a];
-;//			delay_ms(100);
-;//		};
-;//		for (a=6;a>=0;a--)
-;//		{
-;//			PORTC=led[a];
-;//			delay_ms(100);
-;//		};
-;//	}
-;
-;    char keypad()
-; 0000 00AD     {
-_keypad:
-; .FSTART _keypad
-; 0000 00AE         while(1)
-_0xA:
-; 0000 00AF         {
-; 0000 00B0            int row=0, col=-1,val=-2;
-; 0000 00B1            for (row = 0; row<4; row++)
-	SBIW R28,6
-	LDI  R30,LOW(254)
-	ST   Y,R30
-	LDI  R30,LOW(255)
-	STD  Y+1,R30
-	STD  Y+2,R30
-	STD  Y+3,R30
-	LDI  R30,LOW(0)
-	STD  Y+4,R30
-	STD  Y+5,R30
-;	row -> Y+4
-;	col -> Y+2
-;	val -> Y+0
-	STD  Y+4,R30
-	STD  Y+4+1,R30
-_0xE:
-	LDD  R26,Y+4
-	LDD  R27,Y+4+1
-	SBIW R26,4
-	BRGE _0xF
-; 0000 00B2            {
-; 0000 00B3            PORTA = ~ref[row];
-	LDD  R30,Y+4
-	LDD  R31,Y+4+1
-	SUBI R30,LOW(-_ref)
-	SBCI R31,HIGH(-_ref)
-	LD   R30,Z
-	COM  R30
+	OUT  0x1A,R30
+; 0000 004B     DDRB = 0x0F; // Assuming keypad is connected to PORTB pins 0-3 as COLS
+	OUT  0x17,R30
+; 0000 004C     PORTA = 0xF0; // Activate internal pull-ups on PORTA pins 0-3 as ROWS
+	LDI  R30,LOW(240)
 	OUT  0x1B,R30
-; 0000 00B4               if(col0 == 0)
-	SBIC 0x16,0
-	RJMP _0x10
-; 0000 00B5                {
-; 0000 00B6                   while(col0 == 0);
-_0x11:
-	SBIS 0x16,0
-	RJMP _0x11
-; 0000 00B7                   col = 0;
-	LDI  R30,LOW(0)
-	STD  Y+2,R30
-	STD  Y+2+1,R30
-; 0000 00B8                   break;
-	RJMP _0xF
-; 0000 00B9                }
-; 0000 00BA               if(col1 == 0)
-_0x10:
-	SBIC 0x16,1
-	RJMP _0x14
-; 0000 00BB                {
-; 0000 00BC                   while(col1 == 0);
-_0x15:
-	SBIS 0x16,1
-	RJMP _0x15
-; 0000 00BD                   col = 1;
-	LDI  R30,LOW(1)
-	LDI  R31,HIGH(1)
-	STD  Y+2,R30
-	STD  Y+2+1,R31
-; 0000 00BE                   break;
-	RJMP _0xF
-; 0000 00BF                }
-; 0000 00C0                if(col2 == 0)
-_0x14:
-	SBIC 0x16,2
-	RJMP _0x18
-; 0000 00C1                {
-; 0000 00C2                   while(col2 == 0);
-_0x19:
-	SBIS 0x16,2
-	RJMP _0x19
-; 0000 00C3                   col = 2;
-	LDI  R30,LOW(2)
-	LDI  R31,HIGH(2)
-	STD  Y+2,R30
-	STD  Y+2+1,R31
-; 0000 00C4                   break;
-	RJMP _0xF
-; 0000 00C5                }
-; 0000 00C6               if(col3 == 0)
-_0x18:
-	SBIC 0x16,3
-	RJMP _0x1C
-; 0000 00C7                {
-; 0000 00C8                   while(col3 == 0);
-_0x1D:
-	SBIS 0x16,3
-	RJMP _0x1D
-; 0000 00C9                   col = 3;
-	LDI  R30,LOW(3)
-	LDI  R31,HIGH(3)
-	STD  Y+2,R30
-	STD  Y+2+1,R31
-; 0000 00CA                   break;
-	RJMP _0xF
-; 0000 00CB                }
-; 0000 00CC               }
-_0x1C:
-	LDD  R30,Y+4
-	LDD  R31,Y+4+1
-	ADIW R30,1
-	STD  Y+4,R30
-	STD  Y+4+1,R31
-	RJMP _0xE
-_0xF:
-; 0000 00CD                if (col != -1) //if key was pressed
-	LDD  R26,Y+2
-	LDD  R27,Y+2+1
-	CPI  R26,LOW(0xFFFF)
-	LDI  R30,HIGH(0xFFFF)
-	CPC  R27,R30
-	BRNE PC+2
-	RJMP _0x20
-; 0000 00CE                {
-; 0000 00CF                  val= row*4 + col;
-	LDD  R30,Y+4
-	LDD  R31,Y+4+1
-	CALL __LSLW2
-	ADD  R30,R26
-	ADC  R31,R27
-	ST   Y,R30
-	STD  Y+1,R31
-; 0000 00D0 //                if (val != 0 && val != 1 && val != 3 && val != 4 && val != 8 && val != 12)
-; 0000 00D1 //                {
-; 0000 00D2 //                   PORTC = ~seg [(row-1)*3 - (col-1)];
-; 0000 00D3 //                }
-; 0000 00D4                 //PORTC = ~seg [val];
-; 0000 00D5                 PIND.0 = 1;
-	SBI  0x10,0
-; 0000 00D6 
-; 0000 00D7                 switch (val) {
-; 0000 00D8                 case 0:
-	SBIW R30,0
-	BRNE _0x26
-; 0000 00D9                     input  = 7;
-	LDI  R30,LOW(7)
-	LDI  R31,HIGH(7)
-	MOVW R6,R30
-; 0000 00DA                 break;
-	RJMP _0x25
-; 0000 00DB                 case 1:
-_0x26:
-	CPI  R30,LOW(0x1)
-	LDI  R26,HIGH(0x1)
-	CPC  R31,R26
-	BRNE _0x27
-; 0000 00DC                     input  = 8;
-	LDI  R30,LOW(8)
-	LDI  R31,HIGH(8)
-	MOVW R6,R30
-; 0000 00DD                 break;
-	RJMP _0x25
-; 0000 00DE                 case 2:
-_0x27:
-	CPI  R30,LOW(0x2)
-	LDI  R26,HIGH(0x2)
-	CPC  R31,R26
-	BRNE _0x28
-; 0000 00DF                     input  = 9;
-	LDI  R30,LOW(9)
-	LDI  R31,HIGH(9)
-	MOVW R6,R30
-; 0000 00E0                 break;
-	RJMP _0x25
-; 0000 00E1                 case 4:
-_0x28:
-	CPI  R30,LOW(0x4)
-	LDI  R26,HIGH(0x4)
-	CPC  R31,R26
-	BRNE _0x29
-; 0000 00E2                     input  = 4;
-	LDI  R30,LOW(4)
-	LDI  R31,HIGH(4)
-	MOVW R6,R30
-; 0000 00E3                 break;
-	RJMP _0x25
-; 0000 00E4                 case 5:
-_0x29:
-	CPI  R30,LOW(0x5)
-	LDI  R26,HIGH(0x5)
-	CPC  R31,R26
-	BRNE _0x2A
-; 0000 00E5                     input  = 5;
-	LDI  R30,LOW(5)
-	LDI  R31,HIGH(5)
-	MOVW R6,R30
-; 0000 00E6                 break;
-	RJMP _0x25
-; 0000 00E7                 case 6:
-_0x2A:
-	CPI  R30,LOW(0x6)
-	LDI  R26,HIGH(0x6)
-	CPC  R31,R26
-	BRNE _0x2B
-; 0000 00E8                     input  = 6;
-	LDI  R30,LOW(6)
-	LDI  R31,HIGH(6)
-	MOVW R6,R30
-; 0000 00E9                 break;
-	RJMP _0x25
-; 0000 00EA                 case 8:
-_0x2B:
-	CPI  R30,LOW(0x8)
-	LDI  R26,HIGH(0x8)
-	CPC  R31,R26
-	BRNE _0x2C
-; 0000 00EB                     input  = 1;
-	LDI  R30,LOW(1)
-	LDI  R31,HIGH(1)
-	MOVW R6,R30
-; 0000 00EC                 break;
-	RJMP _0x25
-; 0000 00ED                 case 9:
-_0x2C:
-	CPI  R30,LOW(0x9)
-	LDI  R26,HIGH(0x9)
-	CPC  R31,R26
-	BRNE _0x2D
-; 0000 00EE                     input  = 2;
-	LDI  R30,LOW(2)
-	LDI  R31,HIGH(2)
-	MOVW R6,R30
-; 0000 00EF                 break;
-	RJMP _0x25
-; 0000 00F0                 case 10:
-_0x2D:
-	CPI  R30,LOW(0xA)
-	LDI  R26,HIGH(0xA)
-	CPC  R31,R26
-	BRNE _0x2E
-; 0000 00F1                     input  = 3;
-	LDI  R30,LOW(3)
-	LDI  R31,HIGH(3)
-	MOVW R6,R30
-; 0000 00F2                 break;
-	RJMP _0x25
-; 0000 00F3                 case 12:
-_0x2E:
-	CPI  R30,LOW(0xC)
-	LDI  R26,HIGH(0xC)
-	CPC  R31,R26
-	BRNE _0x25
-; 0000 00F4                     input  = 0;
-	CLR  R6
-	CLR  R7
-; 0000 00F5                 break;
-; 0000 00F6                }
-_0x25:
-; 0000 00F7 
-; 0000 00F8                return input;
-	MOV  R30,R6
-	ADIW R28,6
+; 0000 004D     PORTB = 0xF0; // Activate internal pull-ups on PORTB pins 0-3 as COLS
+	OUT  0x18,R30
+; 0000 004E     DDRC = 0xFF; // Assuming seven segment display is connected to PORTC
+	LDI  R30,LOW(255)
+	OUT  0x14,R30
+; 0000 004F     DDRB=(1<<DDB7); // Assuming buzzer is connected to pin PB0
+	LDI  R30,LOW(128)
+	OUT  0x17,R30
+; 0000 0050     DDRD = 0xFF; // Assuming LEDs are connected to PORTD
+	LDI  R30,LOW(255)
+	OUT  0x11,R30
+; 0000 0051 }
 	RET
-; 0000 00F9 
-; 0000 00FA         }
-; 0000 00FB     }
-_0x20:
-	ADIW R28,6
-	RJMP _0xA
-; 0000 00FC }
 ; .FEND
 ;
-;//   void detrmine(int c)
-;//    {  int input = 0;
-;//        switch (c) {
-;//        case 0:
-;//            input  = 7;
-;//        break;
-;//        case 1:
-;//            input  = 8;
-;//        break;
-;//        case 2:
-;//            input  = 9;
-;//        break;
-;//        case 4:
-;//            input  = 4;
-;//        break;
-;//        case 5:
-;//            input  = 5;
-;//        break;
-;//        case 6:
-;//            input  = 6;
-;//        break;
-;//        case 8:
-;//            input  = 1;
-;//        break;
-;//        case 9:
-;//            input  = 2;
-;//        break;
-;//        case 10:
-;//            input  = 3;
-;//        break;
-;//        case 12:
-;//            input  = 0;
-;//        break;
-;//        return input;
-;//        };
-;//
-;//    }
+;char read_keypad() {
+; 0000 0053 char read_keypad() {
+; 0000 0054     // Read input from keypad and return the pressed key
+; 0000 0055     // Define keypad layout (assuming a 4x4 matrix)
+; 0000 0056     char keypad_layout[4][4] = {
+; 0000 0057         {'/', '9', '8', '7'},
+; 0000 0058         {'x', '6', '5', '4'},
+; 0000 0059         {'-', '3', '2', '1'},
+; 0000 005A         {'+', '=', '0', 'c'}
+; 0000 005B     };
+; 0000 005C 
+; 0000 005D     // Loop through each ROW and check for key press
+; 0000 005E     int row = 0, col =0;
+; 0000 005F 
+; 0000 0060     for (row = 0; row < 4; row++) {
+;	keypad_layout -> Y+4
+;	row -> R16,R17
+;	col -> R18,R19
+; 0000 0061         // Activate current ROW
+; 0000 0062         PORTA = (PORTA & 0xF0) | ~(1 << row);
+; 0000 0063 
+; 0000 0064         // Check for key press in current ROW
+; 0000 0065         for (col = 4; col < 8; col++) {
+; 0000 0066             if (!(PINB & (1 << col))) {  //PORTB?
+; 0000 0067                 // Key pressed, return corresponding character from keypad layout
+; 0000 0068                 return keypad_layout[row][col - 4];
+; 0000 0069             }
+; 0000 006A         }
+; 0000 006B     }
+; 0000 006C 
+; 0000 006D     // No key pressed, return null character
+; 0000 006E     return '\0';
+; 0000 006F }
+;
+;void display_on_seven_segment(int number) {
+; 0000 0071 void display_on_seven_segment(int number) {
+; 0000 0072     // Display the given number on the seven segment display
+; 0000 0073     // Define the segments for each digit (assuming common cathode display)
+; 0000 0074     const int segments[] = {
+; 0000 0075         // 0bGFEDCBA
+; 0000 0076         0x3F, // 0
+; 0000 0077         0x06, // 1
+; 0000 0078         0x5B, // 2
+; 0000 0079         0x4F, // 3
+; 0000 007A         0x66, // 4
+; 0000 007B         0x6D, // 5
+; 0000 007C         0x7D, // 6
+; 0000 007D         0x07, // 7
+; 0000 007E         0x7F, // 8
+; 0000 007F         0x6F // 9
+; 0000 0080     };
+; 0000 0081 
+; 0000 0082     // Extract digits from the number
+; 0000 0083     int digit1 = number / 10;
+; 0000 0084     int digit2 = number % 10;
+; 0000 0085 
+; 0000 0086     // Define the pins connected to the seven segment display
+; 0000 0087 
+; 0000 0088     // Display the first digit
+; 0000 0089     PORTC = segments[digit1];
+;	number -> Y+24
+;	segments -> Y+4
+;	digit1 -> R16,R17
+;	digit2 -> R18,R19
+; 0000 008A     // Assume pins C0-C3 are connected to the common cathode/anode of the first digit
+; 0000 008B     // Activate the first digit by setting pins C0-C3 LOW and others HIGH
+; 0000 008C     PORTC |= 0x0F;
+; 0000 008D 
+; 0000 008E     delay_ms(1); // Adjust delay as needed for display stability
+; 0000 008F 
+; 0000 0090     // Display the second digit
+; 0000 0091     PORTC = segments[digit2];
+; 0000 0092     // Assume pins C4-C7 are connected to the common cathode/anode of the second digit
+; 0000 0093     // Activate the second digit by setting pins C4-C7 LOW and others HIGH
+; 0000 0094     PORTC |= 0xF0;
+; 0000 0095 
+; 0000 0096     delay_ms(1); // Adjust delay as needed for display stability
+; 0000 0097 
+; 0000 0098 }
+;
+;volatile int remaining_seconds;
+;
+;void countdown_timer(int minutes, int seconds) {
+; 0000 009C void countdown_timer(int minutes, int seconds) {
+; 0000 009D     // Countdown from the given minutes and seconds
+; 0000 009E     // Calculate total seconds
+; 0000 009F     remaining_seconds = minutes * 60 + seconds;
+;	minutes -> Y+2
+;	seconds -> Y+0
+; 0000 00A0 
+; 0000 00A1     // Set up Timer1 for countdown
+; 0000 00A2     TCCR1B |= (1 << CS12) | (1 << CS10); // Set prescaler to 1024
+; 0000 00A3     TCNT1 = 0; // Initialize counter value
+; 0000 00A4     OCR1A = 15625; // Timer overflow occurs every second
+; 0000 00A5     TIMSK |= (1 << OCIE1A); // Enable Timer1 Compare A interrupt
+; 0000 00A6 
+; 0000 00A7     sei(); // Enable global interrupts
+; 0000 00A8 
+; 0000 00A9     while(remaining_seconds > 0) {
+; 0000 00AA         // Wait for countdown to finish
+; 0000 00AB     }
+; 0000 00AC }
+;
+;// Timer1 Compare A interrupt service routine
+;interrupt [EXT_INT1] void ext_int1_isr(void) {
+; 0000 00AF interrupt [3] void ext_int1_isr(void) {
+_ext_int1_isr:
+; .FSTART _ext_int1_isr
+	ST   -Y,R26
+	ST   -Y,R27
+	ST   -Y,R30
+	ST   -Y,R31
+	IN   R30,SREG
+	ST   -Y,R30
+; 0000 00B0     remaining_seconds--;
+	LDI  R26,LOW(_remaining_seconds)
+	LDI  R27,HIGH(_remaining_seconds)
+	LD   R30,X+
+	LD   R31,X+
+	SBIW R30,1
+	ST   -X,R31
+	ST   -X,R30
+; 0000 00B1 }
+	LD   R30,Y+
+	OUT  SREG,R30
+	LD   R31,Y+
+	LD   R30,Y+
+	LD   R27,Y+
+	LD   R26,Y+
+	RETI
+; .FEND
+;
+;void sound_buzzer()
+; 0000 00B4 {
+_sound_buzzer:
+; .FSTART _sound_buzzer
+; 0000 00B5     // Activate the buzzer by setting the corresponding pin HIGH
+; 0000 00B6     PINB.7 = 1;
+	SBI  0x16,7
+; 0000 00B7 
+; 0000 00B8     // Delay for the buzzer sound duration
+; 0000 00B9     delay_ms(200); // Adjust the delay as needed for desired sound duration
+	LDI  R26,LOW(200)
+	LDI  R27,0
+	CALL _delay_ms
+; 0000 00BA 
+; 0000 00BB     // Deactivate the buzzer by setting the corresponding pin LOW
+; 0000 00BC     PINB.7 = 0;
+	CBI  0x16,7
+; 0000 00BD }
+	RET
+; .FEND
+;
+;void led_animation() {
+; 0000 00BF void led_animation() {
+; 0000 00C0     // Start the LED animation
+; 0000 00C1 
+; 0000 00C2     // LED dance pattern
+; 0000 00C3     int pattern[] = {
+; 0000 00C4         0xAA, // Alternating on/off pattern
+; 0000 00C5         0x55 // Inverted alternating on/off pattern
+; 0000 00C6     };
+; 0000 00C7 
+; 0000 00C8     // Loop through the pattern to animate LEDs
+; 0000 00C9     int i = 0;
+; 0000 00CA     for (i = 0; i < sizeof(pattern) / sizeof(pattern[0]); i++) {
+;	pattern -> Y+2
+;	i -> R16,R17
+; 0000 00CB         // Display current pattern on LEDs
+; 0000 00CC         PORTD = pattern[i];
+; 0000 00CD 
+; 0000 00CE         // Delay for animation effect
+; 0000 00CF         delay_ms(100); // Adjust delay as needed for desired animation speed
+; 0000 00D0     }
+; 0000 00D1 
+; 0000 00D2     // Turn off all LEDs after animation
+; 0000 00D3     PORTD = 0x00;
+; 0000 00D4 }
+;
 
 	.DSEG
-_seg:
-	.BYTE 0x14
-_ref:
-	.BYTE 0x4
+_remaining_seconds:
+	.BYTE 0x2
 
 	.CSEG
 
 	.CSEG
-__LSLW2:
-	LSL  R30
-	ROL  R31
-	LSL  R30
-	ROL  R31
-	RET
+_delay_ms:
+	adiw r26,0
+	breq __delay_ms1
+__delay_ms0:
+	wdr
+	__DELAY_USW 0x7D0
+	sbiw r26,1
+	brne __delay_ms0
+__delay_ms1:
+	ret
 
 ;END OF CODE MARKER
 __END_OF_CODE:
