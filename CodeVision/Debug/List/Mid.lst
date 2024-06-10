@@ -1,6 +1,10 @@
 
-AVRASM ver. 2.1.30  C:\Users\Tamana\OneDrive\Documents\GitHub\midProject\CodeVision\Debug\List\Mid.asm Mon Jun 10 16:37:17 2024
+AVRASM ver. 2.1.30  C:\Users\Tamana\OneDrive\Documents\GitHub\midProject\CodeVision\Debug\List\Mid.asm Mon Jun 10 17:56:26 2024
 
+C:\Users\Tamana\OneDrive\Documents\GitHub\midProject\CodeVision\Debug\List\Mid.asm(1088): warning: Register r4 already defined by the .DEF directive
+C:\Users\Tamana\OneDrive\Documents\GitHub\midProject\CodeVision\Debug\List\Mid.asm(1089): warning: Register r5 already defined by the .DEF directive
+C:\Users\Tamana\OneDrive\Documents\GitHub\midProject\CodeVision\Debug\List\Mid.asm(1090): warning: Register r6 already defined by the .DEF directive
+C:\Users\Tamana\OneDrive\Documents\GitHub\midProject\CodeVision\Debug\List\Mid.asm(1091): warning: Register r7 already defined by the .DEF directive
                  
                  
                  ;CodeVisionAVR C Compiler V3.14 Advanced
@@ -1088,6 +1092,12 @@ AVRASM ver. 2.1.30  C:\Users\Tamana\OneDrive\Documents\GitHub\midProject\CodeVis
                  	ADD  R31,R0
                  	.ENDM
                  
+                 ;NAME DEFINITIONS FOR GLOBAL VARIABLES ALLOCATED TO REGISTERS
+                 	.DEF _LCD_ref=R4
+                 	.DEF _LCD_ref_msb=R5
+                 	.DEF _i=R6
+                 	.DEF _i_msb=R7
+                 
                  	.CSEG
                  	.ORG 0x00
                  
@@ -1095,9 +1105,9 @@ AVRASM ver. 2.1.30  C:\Users\Tamana\OneDrive\Documents\GitHub\midProject\CodeVis
                  __START_OF_CODE:
                  
                  ;INTERRUPT VECTORS
-000000 940c 003c 	JMP  __RESET
+000000 940c 0030 	JMP  __RESET
 000002 940c 0000 	JMP  0x00
-000004 940c 006a 	JMP  _ext_int1_isr
+000004 940c 0000 	JMP  0x00
 000006 940c 0000 	JMP  0x00
 000008 940c 0000 	JMP  0x00
 00000a 940c 0000 	JMP  0x00
@@ -1105,7 +1115,7 @@ AVRASM ver. 2.1.30  C:\Users\Tamana\OneDrive\Documents\GitHub\midProject\CodeVis
 00000e 940c 0000 	JMP  0x00
 000010 940c 0000 	JMP  0x00
 000012 940c 0000 	JMP  0x00
-000014 940c 0000 	JMP  0x00
+000014 940c 005d 	JMP  _timer0_comp_isr
 000016 940c 0000 	JMP  0x00
 000018 940c 0000 	JMP  0x00
 00001a 940c 0000 	JMP  0x00
@@ -1117,67 +1127,86 @@ AVRASM ver. 2.1.30  C:\Users\Tamana\OneDrive\Documents\GitHub\midProject\CodeVis
 000026 940c 0000 	JMP  0x00
 000028 940c 0000 	JMP  0x00
                  
-                 _0x8:
-00002a 392f
-00002b 3738
-00002c 3678
-00002d 3435      	.DB  0x2F,0x39,0x38,0x37,0x78,0x36,0x35,0x34
-00002e 332d
-00002f 3132
-000030 3d2b
-000031 6330      	.DB  0x2D,0x33,0x32,0x31,0x2B,0x3D,0x30,0x63
-                 _0x10:
-000032 003f
-000033 0006
-000034 005b
-000035 004f      	.DB  0x3F,0x0,0x6,0x0,0x5B,0x0,0x4F,0x0
-000036 0066
-000037 006d
-000038 007d
-000039 0007      	.DB  0x66,0x0,0x6D,0x0,0x7D,0x0,0x7,0x0
-00003a 007f
-00003b 006f      	.DB  0x7F,0x0,0x6F,0x0
+                 ;GLOBAL REGISTER VARIABLES INITIALIZATION
+                 __REG_VARS:
+00002a 00ef
+00002b 0000      	.DB  0xEF,0x0,0x0,0x0
+                 
+                 
+                 __GLOBAL_INI_TBL:
+00002c 0004      	.DW  0x04
+00002d 0004      	.DW  0x04
+00002e 0054      	.DW  __REG_VARS*2
+                 
+                 _0xFFFFFFFF:
+00002f 0000      	.DW  0
+                 
+                 #define __GLOBAL_INI_TBL_PRESENT 1
+                 
                  __RESET:
-00003c 94f8      	CLI
-00003d 27ee      	CLR  R30
-00003e bbec      	OUT  EECR,R30
+000030 94f8      	CLI
+000031 27ee      	CLR  R30
+000032 bbec      	OUT  EECR,R30
                  
                  ;INTERRUPT VECTORS ARE PLACED
                  ;AT THE START OF FLASH
-00003f e0f1      	LDI  R31,1
-000040 bffb      	OUT  GICR,R31
-000041 bfeb      	OUT  GICR,R30
-000042 bfe5      	OUT  MCUCR,R30
+000033 e0f1      	LDI  R31,1
+000034 bffb      	OUT  GICR,R31
+000035 bfeb      	OUT  GICR,R30
+000036 bfe5      	OUT  MCUCR,R30
                  
                  ;CLEAR R2-R14
-000043 e08d      	LDI  R24,(14-2)+1
-000044 e0a2      	LDI  R26,2
-000045 27bb      	CLR  R27
+000037 e08d      	LDI  R24,(14-2)+1
+000038 e0a2      	LDI  R26,2
+000039 27bb      	CLR  R27
                  __CLEAR_REG:
-000046 93ed      	ST   X+,R30
-000047 958a      	DEC  R24
-000048 f7e9      	BRNE __CLEAR_REG
+00003a 93ed      	ST   X+,R30
+00003b 958a      	DEC  R24
+00003c f7e9      	BRNE __CLEAR_REG
                  
                  ;CLEAR SRAM
-000049 e080      	LDI  R24,LOW(__CLEAR_SRAM_SIZE)
-00004a e098      	LDI  R25,HIGH(__CLEAR_SRAM_SIZE)
-00004b e6a0      	LDI  R26,__SRAM_START
+00003d e080      	LDI  R24,LOW(__CLEAR_SRAM_SIZE)
+00003e e098      	LDI  R25,HIGH(__CLEAR_SRAM_SIZE)
+00003f e6a0      	LDI  R26,__SRAM_START
                  __CLEAR_SRAM:
-00004c 93ed      	ST   X+,R30
-00004d 9701      	SBIW R24,1
-00004e f7e9      	BRNE __CLEAR_SRAM
+000040 93ed      	ST   X+,R30
+000041 9701      	SBIW R24,1
+000042 f7e9      	BRNE __CLEAR_SRAM
+                 
+                 ;GLOBAL VARIABLES INITIALIZATION
+000043 e5e8      	LDI  R30,LOW(__GLOBAL_INI_TBL*2)
+000044 e0f0      	LDI  R31,HIGH(__GLOBAL_INI_TBL*2)
+                 __GLOBAL_INI_NEXT:
+000045 9185      	LPM  R24,Z+
+000046 9195      	LPM  R25,Z+
+000047 9700      	SBIW R24,0
+000048 f061      	BREQ __GLOBAL_INI_END
+000049 91a5      	LPM  R26,Z+
+00004a 91b5      	LPM  R27,Z+
+00004b 9005      	LPM  R0,Z+
+00004c 9015      	LPM  R1,Z+
+00004d 01bf      	MOVW R22,R30
+00004e 01f0      	MOVW R30,R0
+                 __GLOBAL_INI_LOOP:
+00004f 9005      	LPM  R0,Z+
+000050 920d      	ST   X+,R0
+000051 9701      	SBIW R24,1
+000052 f7e1      	BRNE __GLOBAL_INI_LOOP
+000053 01fb      	MOVW R30,R22
+000054 cff0      	RJMP __GLOBAL_INI_NEXT
+                 __GLOBAL_INI_END:
                  
                  ;HARDWARE STACK POINTER INITIALIZATION
-00004f e5ef      	LDI  R30,LOW(__SRAM_END-__HEAP_SIZE)
-000050 bfed      	OUT  SPL,R30
-000051 e0e8      	LDI  R30,HIGH(__SRAM_END-__HEAP_SIZE)
-000052 bfee      	OUT  SPH,R30
+000055 e5ef      	LDI  R30,LOW(__SRAM_END-__HEAP_SIZE)
+000056 bfed      	OUT  SPL,R30
+000057 e0e8      	LDI  R30,HIGH(__SRAM_END-__HEAP_SIZE)
+000058 bfee      	OUT  SPH,R30
                  
                  ;DATA STACK POINTER INITIALIZATION
-000053 e6c0      	LDI  R28,LOW(__SRAM_START+__DSTACK_SIZE)
-000054 e0d2      	LDI  R29,HIGH(__SRAM_START+__DSTACK_SIZE)
+000059 e6c0      	LDI  R28,LOW(__SRAM_START+__DSTACK_SIZE)
+00005a e0d2      	LDI  R29,HIGH(__SRAM_START+__DSTACK_SIZE)
                  
-000055 940c 0057 	JMP  _main
+00005b 940c 0078 	JMP  _main
                  
                  	.ESEG
                  	.ORG 0
@@ -1198,322 +1227,232 @@ AVRASM ver. 2.1.30  C:\Users\Tamana\OneDrive\Documents\GitHub\midProject\CodeVis
                  	.EQU __sm_adc_noise_red=0x10
                  	.SET power_ctrl_reg=mcucr
                  	#endif
-                 ;#include <delay.h>
-                 ;#include <interrupt.h>
-                 ;	flags -> R17
+                 ;
+                 ;// Declare your global variables here
+                 ;int LCD_ref=0xEF, i=0;
+                 ;// Timer 0 output compare interrupt service routine
+                 ;interrupt [TIM0_COMP] void timer0_comp_isr(void)
+                 ; 0000 0007 {
                  
                  	.CSEG
+                 _timer0_comp_isr:
+                 ; .FSTART _timer0_comp_isr
+00005d 93ea      	ST   -Y,R30
+00005e 93fa      	ST   -Y,R31
+00005f b7ef      	IN   R30,SREG
+000060 93ea      	ST   -Y,R30
+                 ; 0000 0008 // Place your code here
+                 ; 0000 0009     PORTA = ~LCD_ref;
+000061 2de4      	MOV  R30,R4
+000062 95e0      	COM  R30
+000063 bbeb      	OUT  0x1B,R30
+                 ; 0000 000A     LCD_ref = LCD_ref<<1;
+000064 0c44      	LSL  R4
+000065 1c55      	ROL  R5
+                 ; 0000 000B     i++;
+000066 01f3      	MOVW R30,R6
+000067 9631      	ADIW R30,1
+000068 013f      	MOVW R6,R30
+                 ; 0000 000C     if (i == 4)
+000069 e0e4      	LDI  R30,LOW(4)
+00006a e0f0      	LDI  R31,HIGH(4)
+00006b 15e6      	CP   R30,R6
+00006c 05f7      	CPC  R31,R7
+00006d f429      	BRNE _0x3
+                 ; 0000 000D     {
+                 ; 0000 000E         i = 0;
+00006e 2466      	CLR  R6
+00006f 2477      	CLR  R7
+                 ; 0000 000F         LCD_ref = 0xEF;
+000070 eeef      	LDI  R30,LOW(239)
+000071 e0f0      	LDI  R31,HIGH(239)
+000072 012f      	MOVW R4,R30
+                 ; 0000 0010     }
+                 ; 0000 0011 }
+                 _0x3:
+000073 91e9      	LD   R30,Y+
+000074 bfef      	OUT  SREG,R30
+000075 91f9      	LD   R31,Y+
+000076 91e9      	LD   R30,Y+
+000077 9518      	RETI
+                 ; .FEND
                  ;
-                 ;// Define pins for seven segment display, keypad, buzzer, and LEDs
-                 ;#define SEVENSEG_PORT PORTA
-                 ;#define KEYPAD_PORT PORTB
-                 ;#define BUZZER_PORT PORTC
-                 ;#define LED_PORT PORTD
-                 ;
-                 ;// Function prototypes
-                 ;void init();
-                 ;char read_keypad();
-                 ;void display_on_seven_segment(int number);
-                 ;void countdown_timer(int minutes, int seconds);
-                 ;void sound_buzzer();
-                 ;void led_animation();
-                 ;
-                 ;void main()
+                 ;void main(void)
                  ; 0000 0014 {
                  _main:
                  ; .FSTART _main
-                 ; 0000 0015 //    int minutes = 0,seconds = 0;
-                 ; 0000 0016 //    char key;
-                 ; 0000 0017 //
-                 ; 0000 0018     init();
-000057 d003      	RCALL _init
-                 ; 0000 0019 //    // Read minutes input from keypad
-                 ; 0000 001A //    while(1) {
-                 ; 0000 001B //        key = read_keypad();
-                 ; 0000 001C //        if(key >= '0' && key <= '9') {
-                 ; 0000 001D //            minutes = minutes * 10 + (key - '0');
-                 ; 0000 001E //            display_on_seven_segment(minutes);
-                 ; 0000 001F //        }
-                 ; 0000 0020 //        else if(key == '+') {
-                 ; 0000 0021 //            // Read seconds input from keypad
-                 ; 0000 0022 //            while(1) {
-                 ; 0000 0023 //                key = read_keypad();
-                 ; 0000 0024 //                if(key >= '0' && key <= '9') {
-                 ; 0000 0025 //                    seconds = seconds * 10 + (key - '0');
-                 ; 0000 0026 //                    display_on_seven_segment(seconds);
-                 ; 0000 0027 //                }
-                 ; 0000 0028 //                else if(key == '=') {
-                 ; 0000 0029 //                    display_on_seven_segment(minutes);
-                 ; 0000 002A //                    delay_ms(1000);
-                 ; 0000 002B //                    display_on_seven_segment(seconds);
-                 ; 0000 002C //                    delay_ms(1000);
-                 ; 0000 002D //                    break;
-                 ; 0000 002E //                }
-                 ; 0000 002F //            }
-                 ; 0000 0030 //            break;
-                 ; 0000 0031 //        }
-                 ; 0000 0032 //    }
-                 ; 0000 0033 //
-                 ; 0000 0034 //    // Wait for ON/C key to start countdown
-                 ; 0000 0035     while(1) {
-                 _0x4:
-                 ; 0000 0036 //        if(read_keypad() == 'c') {
-                 ; 0000 0037 //            countdown_timer(minutes, seconds);
-                 ; 0000 0038 //            break;
-                 ; 0000 0039         sound_buzzer();
-000058 d025      	RCALL _sound_buzzer
-                 ; 0000 003A         }
-000059 cffe      	RJMP _0x4
-                 ; 0000 003B //    }
-                 ; 0000 003C //
-                 ; 0000 003D //    // Once countdown finishes, sound buzzer and start LED animation
-                 ; 0000 003E //    sound_buzzer();
-                 ; 0000 003F //    led_animation();
-                 ; 0000 0040 
-                 ; 0000 0041 }
-                 _0x7:
-00005a cfff      	RJMP _0x7
-                 ; .FEND
-                 ;
-                 ;void init() {
-                 ; 0000 0043 void init() {
-                 _init:
-                 ; .FSTART _init
-                 ; 0000 0044     // Initialize ports and pins
-                 ; 0000 0045     // Configure SEVENSEG_PORT, KEYPAD_PORT, BUZZER_PORT, and LED_PORT as required
-                 ; 0000 0046 
-                 ; 0000 0047     DDRB = 0x10000000;
-00005b e0e0      	LDI  R30,LOW(0)
-00005c bbe7      	OUT  0x17,R30
-                 ; 0000 0048 
-                 ; 0000 0049     // Set ROWS as outputs and COLS as inputs
-                 ; 0000 004A     DDRA = 0x0F; // Assuming keypad is connected to PORTA pins 0-3 as ROWS
-00005d e0ef      	LDI  R30,LOW(15)
-00005e bbea      	OUT  0x1A,R30
-                 ; 0000 004B     DDRB = 0x0F; // Assuming keypad is connected to PORTB pins 0-3 as COLS
-00005f bbe7      	OUT  0x17,R30
-                 ; 0000 004C     PORTA = 0xF0; // Activate internal pull-ups on PORTA pins 0-3 as ROWS
-000060 efe0      	LDI  R30,LOW(240)
-000061 bbeb      	OUT  0x1B,R30
-                 ; 0000 004D     PORTB = 0xF0; // Activate internal pull-ups on PORTB pins 0-3 as COLS
-000062 bbe8      	OUT  0x18,R30
-                 ; 0000 004E     DDRC = 0xFF; // Assuming seven segment display is connected to PORTC
-000063 efef      	LDI  R30,LOW(255)
-000064 bbe4      	OUT  0x14,R30
-                 ; 0000 004F     DDRB=(1<<DDB7); // Assuming buzzer is connected to pin PB0
-000065 e8e0      	LDI  R30,LOW(128)
-000066 bbe7      	OUT  0x17,R30
-                 ; 0000 0050     DDRD = 0xFF; // Assuming LEDs are connected to PORTD
-000067 efef      	LDI  R30,LOW(255)
-000068 bbe1      	OUT  0x11,R30
-                 ; 0000 0051 }
-000069 9508      	RET
-                 ; .FEND
-                 ;
-                 ;char read_keypad() {
-                 ; 0000 0053 char read_keypad() {
-                 ; 0000 0054     // Read input from keypad and return the pressed key
-                 ; 0000 0055     // Define keypad layout (assuming a 4x4 matrix)
-                 ; 0000 0056     char keypad_layout[4][4] = {
-                 ; 0000 0057         {'/', '9', '8', '7'},
-                 ; 0000 0058         {'x', '6', '5', '4'},
-                 ; 0000 0059         {'-', '3', '2', '1'},
-                 ; 0000 005A         {'+', '=', '0', 'c'}
-                 ; 0000 005B     };
-                 ; 0000 005C 
-                 ; 0000 005D     // Loop through each ROW and check for key press
-                 ; 0000 005E     int row = 0, col =0;
+                 ; 0000 0015 // Declare your local variables here
+                 ; 0000 0016 
+                 ; 0000 0017 // Input/Output Ports initialization
+                 ; 0000 0018 // Port A initialization
+                 ; 0000 0019 
+                 ; 0000 001A     // Initialize ports and pins
+                 ; 0000 001B     // Configure SEVENSEG_PORT, KEYPAD_PORT, BUZZER_PORT, and LED_PORT as required
+                 ; 0000 001C 
+                 ; 0000 001D     DDRB = 0x10000000;
+000078 e0e0      	LDI  R30,LOW(0)
+000079 bbe7      	OUT  0x17,R30
+                 ; 0000 001E 
+                 ; 0000 001F     // Set ROWS as outputs and COLS as inputs
+                 ; 0000 0020     //DDRA = 0x0F; // Assuming keypad is connected to PORTA pins 0-3 as ROWS
+                 ; 0000 0021     DDRB = 0x0F; // Assuming keypad is connected to PORTB pins 0-3 as COLS
+00007a e0ef      	LDI  R30,LOW(15)
+00007b bbe7      	OUT  0x17,R30
+                 ; 0000 0022     PORTA = 0x0F; // Activate internal pull-ups on PORTA pins 0-3 as ROWS
+00007c bbeb      	OUT  0x1B,R30
+                 ; 0000 0023     DDRA=(1<<DDD7) | (1<<DDD6) | (1<<DDD5) | (1<<DDD4) | (0<<DDD3) | (0<<DDD2) | (0<<DDD1) | (0<<DDD0);
+00007d efe0      	LDI  R30,LOW(240)
+00007e bbea      	OUT  0x1A,R30
+                 ; 0000 0024     PORTB = 0xF0; // Activate internal pull-ups on PORTB pins 0-3 as COLS
+00007f bbe8      	OUT  0x18,R30
+                 ; 0000 0025     DDRC = 0xFF; // Assuming seven segment display is connected to PORTC
+000080 efef      	LDI  R30,LOW(255)
+000081 bbe4      	OUT  0x14,R30
+                 ; 0000 0026     DDRB=(1<<DDB7); // Assuming buzzer is connected to pin PB0
+000082 e8e0      	LDI  R30,LOW(128)
+000083 bbe7      	OUT  0x17,R30
+                 ; 0000 0027     DDRD = 0xFF; // Assuming LEDs are connected to PORTD
+000084 efef      	LDI  R30,LOW(255)
+000085 bbe1      	OUT  0x11,R30
+                 ; 0000 0028 
+                 ; 0000 0029 
+                 ; 0000 002A // Timer/Counter 0 initialization
+                 ; 0000 002B // Clock source: System Clock
+                 ; 0000 002C // Clock value: 7.813 kHz
+                 ; 0000 002D // Mode: CTC top=OCR0
+                 ; 0000 002E // OC0 output: Disconnected
+                 ; 0000 002F // Timer Period: 9.984 ms
+                 ; 0000 0030 TCCR0=(0<<WGM00) | (0<<COM01) | (0<<COM00) | (1<<WGM01) | (1<<CS02) | (0<<CS01) | (1<<CS00);
+000086 e0ed      	LDI  R30,LOW(13)
+000087 bfe3      	OUT  0x33,R30
+                 ; 0000 0031 TCNT0=0x00;
+000088 e0e0      	LDI  R30,LOW(0)
+000089 bfe2      	OUT  0x32,R30
+                 ; 0000 0032 OCR0=0x4D;
+00008a e4ed      	LDI  R30,LOW(77)
+00008b bfec      	OUT  0x3C,R30
+                 ; 0000 0033 
+                 ; 0000 0034 // Timer/Counter 1 initialization
+                 ; 0000 0035 // Clock source: System Clock
+                 ; 0000 0036 // Clock value: 31.250 kHz
+                 ; 0000 0037 // Mode: CTC top=OCR1A
+                 ; 0000 0038 // OC1A output: Disconnected
+                 ; 0000 0039 // OC1B output: Disconnected
+                 ; 0000 003A // Noise Canceler: Off
+                 ; 0000 003B // Input Capture on Falling Edge
+                 ; 0000 003C // Timer Period: 1 s
+                 ; 0000 003D // Timer1 Overflow Interrupt: Off
+                 ; 0000 003E // Input Capture Interrupt: Off
+                 ; 0000 003F // Compare A Match Interrupt: On
+                 ; 0000 0040 // Compare B Match Interrupt: On
+                 ; 0000 0041 TCCR1A=(0<<COM1A1) | (0<<COM1A0) | (0<<COM1B1) | (0<<COM1B0) | (0<<WGM11) | (0<<WGM10);
+00008c e0e0      	LDI  R30,LOW(0)
+00008d bdef      	OUT  0x2F,R30
+                 ; 0000 0042 TCCR1B=(0<<ICNC1) | (0<<ICES1) | (0<<WGM13) | (1<<WGM12) | (1<<CS12) | (0<<CS11) | (0<<CS10);
+00008e e0ec      	LDI  R30,LOW(12)
+00008f bdee      	OUT  0x2E,R30
+                 ; 0000 0043 TCNT1H=0x00;
+000090 e0e0      	LDI  R30,LOW(0)
+000091 bded      	OUT  0x2D,R30
+                 ; 0000 0044 TCNT1L=0x00;
+000092 bdec      	OUT  0x2C,R30
+                 ; 0000 0045 ICR1H=0x00;
+000093 bde7      	OUT  0x27,R30
+                 ; 0000 0046 ICR1L=0x00;
+000094 bde6      	OUT  0x26,R30
+                 ; 0000 0047 OCR1AH=0x7A;
+000095 e7ea      	LDI  R30,LOW(122)
+000096 bdeb      	OUT  0x2B,R30
+                 ; 0000 0048 OCR1AL=0x11;
+000097 e1e1      	LDI  R30,LOW(17)
+000098 bdea      	OUT  0x2A,R30
+                 ; 0000 0049 OCR1BH=0x00;
+000099 e0e0      	LDI  R30,LOW(0)
+00009a bde9      	OUT  0x29,R30
+                 ; 0000 004A OCR1BL=0x00;
+00009b bde8      	OUT  0x28,R30
+                 ; 0000 004B 
+                 ; 0000 004C // Timer/Counter 2 initialization
+                 ; 0000 004D // Clock source: System Clock
+                 ; 0000 004E // Clock value: Timer2 Stopped
+                 ; 0000 004F // Mode: Normal top=0xFF
+                 ; 0000 0050 // OC2 output: Disconnected
+                 ; 0000 0051 ASSR=0<<AS2;
+00009c bde2      	OUT  0x22,R30
+                 ; 0000 0052 TCCR2=(0<<PWM2) | (0<<COM21) | (0<<COM20) | (0<<CTC2) | (0<<CS22) | (0<<CS21) | (0<<CS20);
+00009d bde5      	OUT  0x25,R30
+                 ; 0000 0053 TCNT2=0x00;
+00009e bde4      	OUT  0x24,R30
+                 ; 0000 0054 OCR2=0x00;
+00009f bde3      	OUT  0x23,R30
+                 ; 0000 0055 
+                 ; 0000 0056 // Timer(s)/Counter(s) Interrupt(s) initialization
+                 ; 0000 0057 TIMSK=(0<<OCIE2) | (0<<TOIE2) | (0<<TICIE1) | (1<<OCIE1A) | (1<<OCIE1B) | (0<<TOIE1) | (1<<OCIE0) | (0<<TOIE0);
+0000a0 e1ea      	LDI  R30,LOW(26)
+0000a1 bfe9      	OUT  0x39,R30
+                 ; 0000 0058 
+                 ; 0000 0059 // External Interrupt(s) initialization
+                 ; 0000 005A // INT0: Off
+                 ; 0000 005B // INT1: Off
+                 ; 0000 005C // INT2: Off
+                 ; 0000 005D MCUCR=(0<<ISC11) | (0<<ISC10) | (0<<ISC01) | (0<<ISC00);
+0000a2 e0e0      	LDI  R30,LOW(0)
+0000a3 bfe5      	OUT  0x35,R30
+                 ; 0000 005E MCUCSR=(0<<ISC2);
+0000a4 bfe4      	OUT  0x34,R30
                  ; 0000 005F 
-                 ; 0000 0060     for (row = 0; row < 4; row++) {
-                 ;	keypad_layout -> Y+4
-                 ;	row -> R16,R17
-                 ;	col -> R18,R19
-                 ; 0000 0061         // Activate current ROW
-                 ; 0000 0062         PORTA = (PORTA & 0xF0) | ~(1 << row);
+                 ; 0000 0060 // USART initialization
+                 ; 0000 0061 // USART disabled
+                 ; 0000 0062 UCSRB=(0<<RXCIE) | (0<<TXCIE) | (0<<UDRIE) | (0<<RXEN) | (0<<TXEN) | (0<<UCSZ2) | (0<<RXB8) | (0<<TXB8);
+0000a5 b9ea      	OUT  0xA,R30
                  ; 0000 0063 
-                 ; 0000 0064         // Check for key press in current ROW
-                 ; 0000 0065         for (col = 4; col < 8; col++) {
-                 ; 0000 0066             if (!(PINB & (1 << col))) {  //PORTB?
-                 ; 0000 0067                 // Key pressed, return corresponding character from keypad layout
-                 ; 0000 0068                 return keypad_layout[row][col - 4];
-                 ; 0000 0069             }
-                 ; 0000 006A         }
-                 ; 0000 006B     }
+                 ; 0000 0064 // Analog Comparator initialization
+                 ; 0000 0065 // Analog Comparator: Off
+                 ; 0000 0066 // The Analog Comparator's positive input is
+                 ; 0000 0067 // connected to the AIN0 pin
+                 ; 0000 0068 // The Analog Comparator's negative input is
+                 ; 0000 0069 // connected to the AIN1 pin
+                 ; 0000 006A ACSR=(1<<ACD) | (0<<ACBG) | (0<<ACO) | (0<<ACI) | (0<<ACIE) | (0<<ACIC) | (0<<ACIS1) | (0<<ACIS0);
+0000a6 e8e0      	LDI  R30,LOW(128)
+0000a7 b9e8      	OUT  0x8,R30
+                 ; 0000 006B SFIOR=(0<<ACME);
+0000a8 e0e0      	LDI  R30,LOW(0)
+0000a9 bfe0      	OUT  0x30,R30
                  ; 0000 006C 
-                 ; 0000 006D     // No key pressed, return null character
-                 ; 0000 006E     return '\0';
-                 ; 0000 006F }
-                 ;
-                 ;void display_on_seven_segment(int number) {
-                 ; 0000 0071 void display_on_seven_segment(int number) {
-                 ; 0000 0072     // Display the given number on the seven segment display
-                 ; 0000 0073     // Define the segments for each digit (assuming common cathode display)
-                 ; 0000 0074     const int segments[] = {
-                 ; 0000 0075         // 0bGFEDCBA
-                 ; 0000 0076         0x3F, // 0
-                 ; 0000 0077         0x06, // 1
-                 ; 0000 0078         0x5B, // 2
-                 ; 0000 0079         0x4F, // 3
-                 ; 0000 007A         0x66, // 4
-                 ; 0000 007B         0x6D, // 5
-                 ; 0000 007C         0x7D, // 6
-                 ; 0000 007D         0x07, // 7
-                 ; 0000 007E         0x7F, // 8
-                 ; 0000 007F         0x6F // 9
-                 ; 0000 0080     };
-                 ; 0000 0081 
-                 ; 0000 0082     // Extract digits from the number
-                 ; 0000 0083     int digit1 = number / 10;
-                 ; 0000 0084     int digit2 = number % 10;
-                 ; 0000 0085 
-                 ; 0000 0086     // Define the pins connected to the seven segment display
-                 ; 0000 0087 
-                 ; 0000 0088     // Display the first digit
-                 ; 0000 0089     PORTC = segments[digit1];
-                 ;	number -> Y+24
-                 ;	segments -> Y+4
-                 ;	digit1 -> R16,R17
-                 ;	digit2 -> R18,R19
-                 ; 0000 008A     // Assume pins C0-C3 are connected to the common cathode/anode of the first digit
-                 ; 0000 008B     // Activate the first digit by setting pins C0-C3 LOW and others HIGH
-                 ; 0000 008C     PORTC |= 0x0F;
-                 ; 0000 008D 
-                 ; 0000 008E     delay_ms(1); // Adjust delay as needed for display stability
-                 ; 0000 008F 
-                 ; 0000 0090     // Display the second digit
-                 ; 0000 0091     PORTC = segments[digit2];
-                 ; 0000 0092     // Assume pins C4-C7 are connected to the common cathode/anode of the second digit
-                 ; 0000 0093     // Activate the second digit by setting pins C4-C7 LOW and others HIGH
-                 ; 0000 0094     PORTC |= 0xF0;
-                 ; 0000 0095 
-                 ; 0000 0096     delay_ms(1); // Adjust delay as needed for display stability
-                 ; 0000 0097 
-                 ; 0000 0098 }
-                 ;
-                 ;volatile int remaining_seconds;
-                 ;
-                 ;void countdown_timer(int minutes, int seconds) {
-                 ; 0000 009C void countdown_timer(int minutes, int seconds) {
-                 ; 0000 009D     // Countdown from the given minutes and seconds
-                 ; 0000 009E     // Calculate total seconds
-                 ; 0000 009F     remaining_seconds = minutes * 60 + seconds;
-                 ;	minutes -> Y+2
-                 ;	seconds -> Y+0
-                 ; 0000 00A0 
-                 ; 0000 00A1     // Set up Timer1 for countdown
-                 ; 0000 00A2     TCCR1B |= (1 << CS12) | (1 << CS10); // Set prescaler to 1024
-                 ; 0000 00A3     TCNT1 = 0; // Initialize counter value
-                 ; 0000 00A4     OCR1A = 15625; // Timer overflow occurs every second
-                 ; 0000 00A5     TIMSK |= (1 << OCIE1A); // Enable Timer1 Compare A interrupt
-                 ; 0000 00A6 
-                 ; 0000 00A7     sei(); // Enable global interrupts
-                 ; 0000 00A8 
-                 ; 0000 00A9     while(remaining_seconds > 0) {
-                 ; 0000 00AA         // Wait for countdown to finish
-                 ; 0000 00AB     }
-                 ; 0000 00AC }
-                 ;
-                 ;// Timer1 Compare A interrupt service routine
-                 ;interrupt [EXT_INT1] void ext_int1_isr(void) {
-                 ; 0000 00AF interrupt [3] void ext_int1_isr(void) {
-                 _ext_int1_isr:
-                 ; .FSTART _ext_int1_isr
-00006a 93aa      	ST   -Y,R26
-00006b 93ba      	ST   -Y,R27
-00006c 93ea      	ST   -Y,R30
-00006d 93fa      	ST   -Y,R31
-00006e b7ef      	IN   R30,SREG
-00006f 93ea      	ST   -Y,R30
-                 ; 0000 00B0     remaining_seconds--;
-000070 e6a0      	LDI  R26,LOW(_remaining_seconds)
-000071 e0b2      	LDI  R27,HIGH(_remaining_seconds)
-000072 91ed      	LD   R30,X+
-000073 91fd      	LD   R31,X+
-000074 9731      	SBIW R30,1
-000075 93fe      	ST   -X,R31
-000076 93ee      	ST   -X,R30
-                 ; 0000 00B1 }
-000077 91e9      	LD   R30,Y+
-000078 bfef      	OUT  SREG,R30
-000079 91f9      	LD   R31,Y+
-00007a 91e9      	LD   R30,Y+
-00007b 91b9      	LD   R27,Y+
-00007c 91a9      	LD   R26,Y+
-00007d 9518      	RETI
+                 ; 0000 006D // ADC initialization
+                 ; 0000 006E // ADC disabled
+                 ; 0000 006F ADCSRA=(0<<ADEN) | (0<<ADSC) | (0<<ADATE) | (0<<ADIF) | (0<<ADIE) | (0<<ADPS2) | (0<<ADPS1) | (0<<ADPS0);
+0000aa b9e6      	OUT  0x6,R30
+                 ; 0000 0070 
+                 ; 0000 0071 // SPI initialization
+                 ; 0000 0072 // SPI disabled
+                 ; 0000 0073 SPCR=(0<<SPIE) | (0<<SPE) | (0<<DORD) | (0<<MSTR) | (0<<CPOL) | (0<<CPHA) | (0<<SPR1) | (0<<SPR0);
+0000ab b9ed      	OUT  0xD,R30
+                 ; 0000 0074 
+                 ; 0000 0075 // TWI initialization
+                 ; 0000 0076 // TWI disabled
+                 ; 0000 0077 TWCR=(0<<TWEA) | (0<<TWSTA) | (0<<TWSTO) | (0<<TWEN) | (0<<TWIE);
+0000ac bfe6      	OUT  0x36,R30
+                 ; 0000 0078 
+                 ; 0000 0079 // Global enable interrupts
+                 ; 0000 007A #asm("sei")
+0000ad 9478      	sei
+                 ; 0000 007B 
+                 ; 0000 007C while (1)
+                 _0x4:
+                 ; 0000 007D       {
+                 ; 0000 007E       // Place your code here
+                 ; 0000 007F 
+                 ; 0000 0080       }
+0000ae cfff      	RJMP _0x4
+                 ; 0000 0081 }
+                 _0x7:
+0000af cfff      	RJMP _0x7
                  ; .FEND
-                 ;
-                 ;void sound_buzzer()
-                 ; 0000 00B4 {
-                 _sound_buzzer:
-                 ; .FSTART _sound_buzzer
-                 ; 0000 00B5     // Activate the buzzer by setting the corresponding pin HIGH
-                 ; 0000 00B6     PINB.7 = 1;
-00007e 9ab7      	SBI  0x16,7
-                 ; 0000 00B7 
-                 ; 0000 00B8     // Delay for the buzzer sound duration
-                 ; 0000 00B9     delay_ms(200); // Adjust the delay as needed for desired sound duration
-00007f eca8      	LDI  R26,LOW(200)
-000080 e0b0      	LDI  R27,0
-000081 940e 0085 	CALL _delay_ms
-                 ; 0000 00BA 
-                 ; 0000 00BB     // Deactivate the buzzer by setting the corresponding pin LOW
-                 ; 0000 00BC     PINB.7 = 0;
-000083 98b7      	CBI  0x16,7
-                 ; 0000 00BD }
-000084 9508      	RET
-                 ; .FEND
-                 ;
-                 ;void led_animation() {
-                 ; 0000 00BF void led_animation() {
-                 ; 0000 00C0     // Start the LED animation
-                 ; 0000 00C1 
-                 ; 0000 00C2     // LED dance pattern
-                 ; 0000 00C3     int pattern[] = {
-                 ; 0000 00C4         0xAA, // Alternating on/off pattern
-                 ; 0000 00C5         0x55 // Inverted alternating on/off pattern
-                 ; 0000 00C6     };
-                 ; 0000 00C7 
-                 ; 0000 00C8     // Loop through the pattern to animate LEDs
-                 ; 0000 00C9     int i = 0;
-                 ; 0000 00CA     for (i = 0; i < sizeof(pattern) / sizeof(pattern[0]); i++) {
-                 ;	pattern -> Y+2
-                 ;	i -> R16,R17
-                 ; 0000 00CB         // Display current pattern on LEDs
-                 ; 0000 00CC         PORTD = pattern[i];
-                 ; 0000 00CD 
-                 ; 0000 00CE         // Delay for animation effect
-                 ; 0000 00CF         delay_ms(100); // Adjust delay as needed for desired animation speed
-                 ; 0000 00D0     }
-                 ; 0000 00D1 
-                 ; 0000 00D2     // Turn off all LEDs after animation
-                 ; 0000 00D3     PORTD = 0x00;
-                 ; 0000 00D4 }
-                 ;
-                 
-                 	.DSEG
-                 _remaining_seconds:
-000260           	.BYTE 0x2
                  
                  	.CSEG
                  
                  	.CSEG
-                 _delay_ms:
-000085 9610      	adiw r26,0
-000086 f039      	breq __delay_ms1
-                 __delay_ms0:
-000087 95a8      	wdr
-                +
-000088 ed80     +LDI R24 , LOW ( 0x7D0 )
-000089 e097     +LDI R25 , HIGH ( 0x7D0 )
-                +__DELAY_USW_LOOP :
-00008a 9701     +SBIW R24 , 1
-00008b f7f1     +BRNE __DELAY_USW_LOOP
-                 	__DELAY_USW 0x7D0
-00008c 9711      	sbiw r26,1
-00008d f7c9      	brne __delay_ms0
-                 __delay_ms1:
-00008e 9508      	ret
-                 
                  ;END OF CODE MARKER
                  __END_OF_CODE:
 
@@ -1533,12 +1472,12 @@ counted separately from r26..r31 here.
 .dseg memory usage only counts static data declared with .byte
 
 ATmega32 register use summary:
-r0 :   0 r1 :   0 r2 :   0 r3 :   0 r4 :   0 r5 :   0 r6 :   0 r7 :   0 
+r0 :   4 r1 :   1 r2 :   0 r3 :   0 r4 :   3 r5 :   1 r6 :   4 r7 :   2 
 r8 :   0 r9 :   0 r10:   0 r11:   0 r12:   0 r13:   0 r14:   0 r15:   0 
-r16:   0 r17:   0 r18:   0 r19:   0 r20:   0 r21:   0 r22:   0 r23:   0 
-r24:   6 r25:   2 r26:   8 r27:   5 r28:   1 r29:   1 r30:  33 r31:   6 
-x  :   6 y  :  10 z  :   0 
-Registers used: 10 out of 35 (28.6%)
+r16:   0 r17:   0 r18:   0 r19:   0 r20:   0 r21:   0 r22:   2 r23:   0 
+r24:   7 r25:   2 r26:   3 r27:   2 r28:   1 r29:   1 r30:  83 r31:   8 
+x  :   3 y  :   6 z  :   7 
+Registers used: 18 out of 35 (51.4%)
 
 ATmega32 instruction use summary:
 .lds  :   0 .lds.l:   0 .sts  :   0 .sts.l:   0 adc   :   0 add   :   0 
@@ -1546,28 +1485,28 @@ adiw  :   1 and   :   0 andi  :   0 asr   :   0 bclr  :   0 bld   :   0
 brbc  :   0 brbs  :   0 brcc  :   0 brcs  :   0 break :   0 breq  :   1 
 brge  :   0 brhc  :   0 brhs  :   0 brid  :   0 brie  :   0 brlo  :   0 
 brlt  :   0 brmi  :   0 brne  :   4 brpl  :   0 brsh  :   0 brtc  :   0 
-brts  :   0 brvc  :   0 brvs  :   0 bset  :   0 bst   :   0 call  :   1 
-cbi   :   1 cbr   :   0 clc   :   0 clh   :   0 cli   :   1 cln   :   0 
-clr   :   2 cls   :   0 clt   :   0 clv   :   0 clz   :   0 com   :   0 
-cp    :   0 cpc   :   0 cpi   :   0 cpse  :   0 dec   :   1 des   :   0 
+brts  :   0 brvc  :   0 brvs  :   0 bset  :   0 bst   :   0 call  :   0 
+cbi   :   0 cbr   :   0 clc   :   0 clh   :   0 cli   :   1 cln   :   0 
+clr   :   4 cls   :   0 clt   :   0 clv   :   0 clz   :   0 com   :   1 
+cp    :   1 cpc   :   1 cpi   :   0 cpse  :   0 dec   :   1 des   :   0 
 eor   :   0 fmul  :   0 fmuls :   0 fmulsu:   0 icall :   0 ijmp  :   0 
-in    :   1 inc   :   0 jmp   :  22 ld    :   7 ldd   :   0 ldi   :  22 
-lds   :   0 lpm   :   0 lsl   :   0 lsr   :   0 mov   :   0 movw  :   0 
+in    :   1 inc   :   0 jmp   :  22 ld    :   3 ldd   :   0 ldi   :  35 
+lds   :   0 lpm   :   7 lsl   :   1 lsr   :   0 mov   :   1 movw  :   6 
 mul   :   0 muls  :   0 mulsu :   0 neg   :   0 nop   :   0 or    :   0 
-ori   :   0 out   :  15 pop   :   0 push  :   0 rcall :   2 ret   :   3 
-reti  :   1 rjmp  :   2 rol   :   0 ror   :   0 sbc   :   0 sbci  :   0 
-sbi   :   1 sbic  :   0 sbis  :   0 sbiw  :   4 sbr   :   0 sbrc  :   0 
-sbrs  :   0 sec   :   0 seh   :   0 sei   :   0 sen   :   0 ser   :   0 
+ori   :   0 out   :  42 pop   :   0 push  :   0 rcall :   0 ret   :   0 
+reti  :   1 rjmp  :   3 rol   :   1 ror   :   0 sbc   :   0 sbci  :   0 
+sbi   :   0 sbic  :   0 sbis  :   0 sbiw  :   3 sbr   :   0 sbrc  :   0 
+sbrs  :   0 sec   :   0 seh   :   0 sei   :   1 sen   :   0 ser   :   0 
 ses   :   0 set   :   0 sev   :   0 sez   :   0 sleep :   0 spm   :   0 
-st    :   9 std   :   0 sts   :   0 sub   :   0 subi  :   0 swap  :   0 
-tst   :   0 wdr   :   1 
-Instructions used: 21 out of 116 (18.1%)
+st    :   6 std   :   0 sts   :   0 sub   :   0 subi  :   0 swap  :   0 
+tst   :   0 wdr   :   0 
+Instructions used: 24 out of 116 (20.7%)
 
 ATmega32 memory use summary [bytes]:
 Segment   Begin    End      Code   Data   Used    Size   Use%
 ---------------------------------------------------------------
-[.cseg] 0x000000 0x00011e    250     36    286   32768   0.9%
-[.dseg] 0x000060 0x000262      0      2      2    2048   0.1%
+[.cseg] 0x000000 0x000160    340     12    352   32768   1.1%
+[.dseg] 0x000060 0x000260      0      0      0    2048   0.0%
 [.eseg] 0x000000 0x000000      0      0      0    1024   0.0%
 
-Assembly complete, 0 errors, 0 warnings
+Assembly complete, 0 errors, 4 warnings
