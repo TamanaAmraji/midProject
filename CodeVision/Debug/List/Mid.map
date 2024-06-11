@@ -12,10 +12,13 @@ Variable                                                                        
 ------------------------------------------------------------------------------------------------
 LCD_ref                                                                           R4,R5        2
 i                                                                                 R6,R7        2
+row                                                                               R8,R9        2
+col                                                                               R10,R11      2
+input                                                                             R12,R13      2
 
 FLASH Allocation [words]
 Function                                                                          Address   Size
 ------------------------------------------------------------------------------------------------
-timer0_comp_isr                                                                   0x00071     49
-main                                                                              0x000A2     59
-display_on_seven_segment                                                          0x000DD     32
+timer0_comp_isr                                                                   0x00076    131
+timer2_comp_isr                                                                   0x000F9    147
+main                                                                              0x0018C     58
