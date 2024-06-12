@@ -1,7 +1,7 @@
 #include <mega32.h>
 #include <delay.h>
 // Declare your global variables here
-int LCD_ref=0xEF, i=0, digit[2];
+int LCD_ref=0x0D, i=0, digit[2];
     int row = -1, col =-1, input = -1;
 #define col0    PINA.4
 #define col1    PINA.5
@@ -37,15 +37,8 @@ void sound_buzzer();
 // Timer 0 output compare interrupt service routine
 interrupt [TIM0_COMP] void timer0_comp_isr(void)
 {
- Place your code here
-    PORTB = LCD_ref;   
-    LCD_ref = LCD_ref<<1; 
-    i++;
-    if (i == 4) 
-    {
-        i = 0;
-        LCD_ref = 0xEF;
-    }   
+ //Place your code here
+ 
 //    
  
 }
@@ -115,7 +108,7 @@ while (1)
       // Place your code here 
        
 //      key = read_keypad();     
-      //display_on_seven_segment(key);
+      display_on_seven_segment(25);
 
       }
 }
@@ -125,8 +118,8 @@ while (1)
 
 void display_on_seven_segment(int number) {
     
-    // Display the given number on the seven segment display 
-    // Define the segments for each digit (assuming common cathode display)     
+    // Display the given number on the seven segment display   
+    int i;  
     const int segments[] =
      {
         // 0bGFEDCBA
@@ -142,11 +135,20 @@ void display_on_seven_segment(int number) {
         0x10 // 9
     };      
     
-
+  
 
     // Extract digits from the number
      digit[1] = number / 10;
      digit[2] = number % 10; 
-     
-     //PORTC = ~(segments[digit[i]]);
+     LCD_ref = 0x01;
+    for (i=0; i<4; i++)
+    {
+         PORTD = LCD_ref;
+         PORTC = ~(segments[digit[i]]); 
+         delay_ms(10);
+         LCD_ref = LCD_ref<<1;
+    }  
+             
+    
+    
 }

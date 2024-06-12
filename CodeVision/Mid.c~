@@ -1,7 +1,7 @@
 #include <mega32.h>
 #include <delay.h>
 // Declare your global variables here
-int LCD_ref=0xEF, i=0, digit[2];
+int LCD_ref=0x0D, i=0, digit[2];
     int row = -1, col =-1, input = -1;
 #define col0    PINA.4
 #define col1    PINA.5
@@ -32,245 +32,16 @@ int LCD_ref=0xEF, i=0, digit[2];
 
 // Function prototypes
 void display_on_seven_segment(int number);
-//int read_keypad();
+void sound_buzzer();
+
 // Timer 0 output compare interrupt service routine
 interrupt [TIM0_COMP] void timer0_comp_isr(void)
 {
- Place your code here
-    PORTB = LCD_ref;   
-    LCD_ref = LCD_ref<<1; 
-    i++;
-    if (i == 4) 
-    {
-        i = 0;
-        LCD_ref = 0xEF;
-    }   
+ //Place your code here
+ 
 //    
-    
-     // while(1){ 
-        PINA.0=0;PINA.1=1;PINA.2=1;PINA.3=1;
-              if(col0 == 0)
-               {    
-                  while(col0 == 0); 
-                  input = 7;
-                  //break;                      
-               }  
-              if(col1 == 0)
-               { 
-                  while(col1 == 0);
-                  input = 8;
-                  //break;   
-               } 
-               if(col2 == 0)
-               {
-                  while(col2 == 0);
-                  input = 9;
-               //   break;
-               }
-              if(col3 == 0)
-               {
-                  while(col3 == 0);
-                  input = 10; // /
-                //  break;
-               } 
-               
-        PINA.0=1;PINA.1=0;PINA.2=1;PINA.3=1;
-        if(col0 == 0)
-               {    
-                  while(col0 == 0); 
-                  input = 4; 
-                //  break;                      
-               }  
-              if(col1 == 0)
-               { 
-                  while(col1 == 0);
-                  input = 5;
-                //  break;   
-               } 
-               if(col2 == 0)
-               {
-                  while(col2 == 0);
-                  PORTC= ~(0x02);
-                  //input = 6;
-                //  break;
-               }
-              if(col3 == 0)
-               {
-                  while(col3 == 0);
-                  input = 11; // x
-                //  break;
-               } 
-               
-        PINA.0=1;PINA.1=1;PINA.2=0;PINA.3=1;
-        if(col0 == 0)
-               {    
-                  while(col0 == 0); 
-                  input = 1; 
-                //  break;                      
-               }  
-              if(col1 == 0)
-               { 
-                  while(col1 == 0);
-                  input = 2;
-               //   break;   
-               } 
-               if(col2 == 0)
-               {
-                  while(col2 == 0);
-                  input = 3;
-               //   break;
-               }
-              if(col3 == 0)
-               {
-                  while(col3 == 0);
-                  input = 12; // -
-               //   break;
-               } 
-              
-        PINA.0=1;PINA.1=1;PINA.2=1;PINA.3=0;
-        if(col0 == 0)
-               {    
-                  while(col0 == 0); 
-                  input = 13; // C/ON 
-                //  break;                      
-               }  
-              if(col1 == 0)
-               { 
-                  while(col1 == 0);
-                  input = 0;
-                //  break;   
-               } 
-               if(col2 == 0)
-               {
-                  while(col2 == 0);
-                  input = 14;  //=
-                //  break;
-               }
-              if(col3 == 0)
-               {
-                  while(col3 == 0);
-                  input = 15; // +
-               //   break;
-               } 
-             // }
-  
-
+ 
 }
-
-// Timer2 output compare interrupt service routine
-interrupt [TIM2_COMP] void timer2_comp_isr(void)     //segment refresh
-{
-// Place your code here  
-
-  PINA.0=1;
-    while(1){ 
-        PINA.0=0;PINA.1=1;PINA.2=1;PINA.3=1;
-              if(col0 == 0)
-               {    
-                  //while(col0 == 0); 
-                  input = 7;
-                  //break;                      
-               }  
-              if(col1 == 0)
-               { 
-                  //while(col1 == 0);
-                  input = 8;
-                  //break;   
-               } 
-               if(col2 == 0)
-               {
-                  while(col2 == 0);
-                  input = 9;
-                  break;
-               }
-              if(col3 == 0)
-               {
-                  while(col3 == 0);
-                  input = 10; // /
-                  break;
-               } 
-               
-        PINA.0=1;PINA.1=0;PINA.2=1;PINA.3=1;
-        if(col0 == 0)
-               {    
-                  while(col0 == 0); 
-                  input = 4; 
-                  break;                      
-               }  
-              if(col1 == 0)
-               { 
-                  while(col1 == 0);
-                  input = 5;
-                  break;   
-               } 
-               if(col2 == 0)
-               {
-                  while(col2 == 0);
-                  PORTC= ~(0x02);
-                  //input = 6;
-                  break;
-               }
-              if(col3 == 0)
-               {
-                  while(col3 == 0);
-                  input = 11; // x
-                  break;
-               } 
-               
-        PINA.0=1;PINA.1=1;PINA.2=0;PINA.3=1;
-        if(col0 == 0)
-               {    
-                  while(col0 == 0); 
-                  input = 1; 
-                  break;                      
-               }  
-              if(col1 == 0)
-               { 
-                  while(col1 == 0);
-                  input = 2;
-                  break;   
-               } 
-               if(col2 == 0)
-               {
-                  while(col2 == 0);
-                  input = 3;
-                  break;
-               }
-              if(col3 == 0)
-               {
-                  while(col3 == 0);
-                  input = 12; // -
-                  break;
-               } 
-              
-        PINA.0=1;PINA.1=1;PINA.2=1;PINA.3=0;
-        if(col0 == 0)
-               {    
-                  while(col0 == 0); 
-                  input = 13; // C/ON 
-                  break;                      
-               }  
-              if(col1 == 0)
-               { 
-                  while(col1 == 0);
-                  input = 0;
-                  break;   
-               } 
-               if(col2 == 0)
-               {
-                  while(col2 == 0);
-                  input = 14;  //=
-                  break;
-               }
-              if(col3 == 0)
-               {
-                  while(col3 == 0);
-                  input = 15; // +
-                  break;
-               } 
-              }
-   
-}   
 
 void main(void)
 {
@@ -324,16 +95,6 @@ OCR1AL=0x11;
 OCR1BH=0x00;
 OCR1BL=0x00;
 
-// Timer/Counter 2 initialization
-// Clock source: System Clock
-// Clock value: 7.813 kHz
-// Mode: CTC top=OCR2A
-// OC2 output: Disconnected
-// Timer Period: 0.128 ms
-ASSR=0<<AS2;
-TCCR2=(0<<PWM2) | (0<<COM21) | (0<<COM20) | (1<<CTC2) | (1<<CS22) | (1<<CS21) | (1<<CS20);
-TCNT2=0x00;
-OCR2=0x4D;
 
 // Timer(s)/Counter(s) Interrupt(s) initialization
 TIMSK=(0<<OCIE2) | (0<<TOIE2) | (0<<TICIE1) | (1<<OCIE1A) | (1<<OCIE1B) | (0<<TOIE1) | (1<<OCIE0) | (0<<TOIE0);
@@ -347,39 +108,18 @@ while (1)
       // Place your code here 
        
 //      key = read_keypad();     
-      PORTC=  ~(segments[input]);
-      //display_on_seven_segment(key);
+      display_on_seven_segment(25);
 
       }
 }
 
-//int read_keypad() 
-//{
-//    // Read input from keypad and return the pressed key
-//    // Define keypad layout (assuming a 4x4 matrix)
-//    char keypad_layout[4][4] = {
-//        {'/', '9', '8', '7'},
-//        {'x', '6', '5', '4'},
-//        {'-', '3', '2', '1'},
-//        {'+', '=', '0', 'c'}
-//    };
-//
-//    // Loop through each ROW and check for key press 
-//
-//              
-//
-//    }  
-   // }
-
-    // No key pressed, input = null character
-   // return '0';
 
 
 
 void display_on_seven_segment(int number) {
     
-    // Display the given number on the seven segment display 
-    // Define the segments for each digit (assuming common cathode display)     
+    // Display the given number on the seven segment display   
+    int i;  
     const int segments[] =
      {
         // 0bGFEDCBA
@@ -395,11 +135,20 @@ void display_on_seven_segment(int number) {
         0x10 // 9
     };      
     
-
+  
 
     // Extract digits from the number
      digit[1] = number / 10;
      digit[2] = number % 10; 
-     
-     //PORTC = ~(segments[digit[i]]);
+     LCD_ref = 0x01;
+    for (i=0; i<4; i++)
+    {
+         PORTD = LCD_ref;
+         PORTC = ~(segments[digit[i]]); 
+         //delay_ms(10);
+         LCD_ref = LCD_ref<<1;
+    }  
+             
+    
+    
 }
