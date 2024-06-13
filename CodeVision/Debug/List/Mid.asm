@@ -1093,8 +1093,8 @@ __DELAY_USW_LOOP:
 	.DEF _row_msb=R9
 	.DEF _col=R10
 	.DEF _col_msb=R11
-	.DEF _input=R12
-	.DEF _input_msb=R13
+	.DEF _pos=R12
+	.DEF _pos_msb=R13
 
 	.CSEG
 	.ORG 0x00
@@ -1113,7 +1113,7 @@ __START_OF_CODE:
 	JMP  0x00
 	JMP  0x00
 	JMP  0x00
-	JMP  0x00
+	JMP  _timer0_comp_isr
 	JMP  0x00
 	JMP  0x00
 	JMP  0x00
@@ -1125,21 +1125,23 @@ __START_OF_CODE:
 	JMP  0x00
 	JMP  0x00
 
+_segments:
+	.DB  0x40,0x0,0x79,0x0,0x24,0x0,0x30,0x0
+	.DB  0x19,0x0,0x12,0x0,0x2,0x0,0x78,0x0
+	.DB  0x0,0x0,0x10,0x0
+
 ;GLOBAL REGISTER VARIABLES INITIALIZATION
 __REG_VARS:
-	.DB  0xD,0x0,0x0,0x0
+	.DB  0x1,0x0,0x0,0x0
 	.DB  0x0,0x0,0xFF,0xFF
 	.DB  0xFF,0xFF
 
 _0x3:
-	.DB  0x1,0x2,0x4,0x8
-_0x8:
+	.DB  0xF7,0xF6,0xFB,0xF7
+_0xA:
 	.DB  0x40,0x0,0x79,0x0,0x24,0x0,0x30,0x0
 	.DB  0x19,0x0,0x12,0x0,0x2,0x0,0x78,0x0
 	.DB  0x0,0x0,0x10,0x0
-_0xC:
-	.DB  0x78,0x36,0x35,0x34,0x2D,0x33,0x32,0x31
-	.DB  0x2B,0x3D,0x30,0x63
 
 __GLOBAL_INI_TBL:
 	.DW  0x0A
@@ -1237,12 +1239,12 @@ __GLOBAL_INI_END:
 	#endif
 ;#include <delay.h>
 ;// Declare your global variables here
-;int LCD_ref=0x0D, i=0, digit[2];
-;    int row = 0, col =-1, input = -1, pos = 0;
-;#define col0    PINA.4
-;#define col1    PINA.5
-;#define col2    PINA.6
-;#define col3    PINA.7
+;int LCD_ref=0x01, i=0, digit[2];
+;int row = 0, col =-1, pos = -1;
+;#define col0    PINA.0
+;#define col1    PINA.1
+;#define col2    PINA.2
+;#define col3    PINA.3
 ;
 ;    const int segments[] =
 ;     {
@@ -1259,292 +1261,386 @@ __GLOBAL_INI_END:
 ;        0x10 // 9
 ;    };
 ;
-;    char row_ref[]= {
-;            0b00000001,
-;            0b00000010,
-;            0b00000100,
-;            0b00001000
-;            };
+;char ref[]= {0xF7,0xF6,0xFB,0xF7};
 
 	.DSEG
 ;
 ;// Function prototypes
 ;void display_on_seven_segment(int number);
-;int read_keypad();
+;char read_keypad();
 ;
-;void main(void)
-; 0000 0026 {
+;interrupt [TIM0_COMP] void timer0_comp_isr(void)
+; 0000 0021 {
 
 	.CSEG
+_timer0_comp_isr:
+; .FSTART _timer0_comp_isr
+	ST   -Y,R26
+	ST   -Y,R27
+	ST   -Y,R30
+	ST   -Y,R31
+	IN   R30,SREG
+	ST   -Y,R30
+; 0000 0022  //Place your code here
+; 0000 0023 
+; 0000 0024     PORTD = LCD_ref;
+	OUT  0x12,R4
+; 0000 0025     PORTC = ~(segments[digit[i]]);
+	MOVW R30,R6
+	LDI  R26,LOW(_digit)
+	LDI  R27,HIGH(_digit)
+	LSL  R30
+	ROL  R31
+	ADD  R26,R30
+	ADC  R27,R31
+	CALL __GETW1P
+	LDI  R26,LOW(_segments*2)
+	LDI  R27,HIGH(_segments*2)
+	LSL  R30
+	ROL  R31
+	ADD  R30,R26
+	ADC  R31,R27
+	LPM  R30,Z
+	COM  R30
+	OUT  0x15,R30
+; 0000 0026     LCD_ref = LCD_ref<<1;
+	LSL  R4
+	ROL  R5
+; 0000 0027     i++;
+	MOVW R30,R6
+	ADIW R30,1
+	MOVW R6,R30
+; 0000 0028 
+; 0000 0029     if (i == 4)
+	LDI  R30,LOW(4)
+	LDI  R31,HIGH(4)
+	CP   R30,R6
+	CPC  R31,R7
+	BRNE _0x4
+; 0000 002A     {
+; 0000 002B         i = 0;
+	CLR  R6
+	CLR  R7
+; 0000 002C         LCD_ref = 0x01;
+	LDI  R30,LOW(1)
+	LDI  R31,HIGH(1)
+	MOVW R4,R30
+; 0000 002D     }
+; 0000 002E 
+; 0000 002F }
+_0x4:
+	LD   R30,Y+
+	OUT  SREG,R30
+	LD   R31,Y+
+	LD   R30,Y+
+	LD   R27,Y+
+	LD   R26,Y+
+	RETI
+; .FEND
+;
+;void main(void)
+; 0000 0032 {
 _main:
 ; .FSTART _main
-; 0000 0027 // Declare your local variables here
-; 0000 0028 int key;  int minutes = 0,seconds = 0;
-; 0000 0029 
-; 0000 002A     // Initialize ports and pins
-; 0000 002B     // Configure SEVENSEG_PORT, KEYPAD_PORT, BUZZER_PORT, and LED_PORT as required
-; 0000 002C 
-; 0000 002D     // Set ROWS as outputs and COLS as inputs
-; 0000 002E     //DDRA = 0x0F; // Assuming keypad is connected to PORTA pins 0-3 as ROWS
-; 0000 002F     DDRB = 0xFF; // Assuming keypad is connected to PORTB pins 0-3 as COLS
-;	key -> R16,R17
-;	minutes -> R18,R19
-;	seconds -> R20,R21
-	__GETWRN 18,19,0
-	__GETWRN 20,21,0
-	LDI  R30,LOW(255)
-	OUT  0x17,R30
-; 0000 0030     PORTB = 0x00; // Activate internal pull-ups on PORTB pins 0-3 as COLS
-	LDI  R30,LOW(0)
-	OUT  0x18,R30
-; 0000 0031     PORTA = 0x00; // Activate internal pull-ups on PORTA pins 0-3 as ROWS
-	OUT  0x1B,R30
-; 0000 0032     DDRA=(0<<DDA7) | (0<<DDA6) | (0<<DDA5) | (0<<DDA4) | (1<<DDA3) | (1<<DDA2) | (1<<DDA1) | (1<<DDA0);;
+; 0000 0033 // Declare your local variables here
+; 0000 0034 //  int minutes = 0,seconds = 0;
+; 0000 0035 
+; 0000 0036     // Initialize ports and pins
+; 0000 0037     // Configure SEVENSEG_PORT, KEYPAD_PORT, BUZZER_PORT, and LED_PORT as required
+; 0000 0038 
+; 0000 0039     // Set ROWS as outputs and COLS as inputs
+; 0000 003A //    DDRB = 0xFF; // Assuming keypad is connected to PORTB pins 0-3 as COLS
+; 0000 003B //    PORTB = 0x00; // Activate internal pull-ups on PORTB pins 0-3 as COLS
+; 0000 003C      DDRA=(0<<DDA7) | (0<<DDA6) | (0<<DDA5) | (0<<DDA4) | (1<<DDA3) | (1<<DDA2) | (1<<DDA1) | (1<<DDA0);
 	LDI  R30,LOW(15)
 	OUT  0x1A,R30
-; 0000 0033     DDRC = 0xFF; // Assuming seven segment display is connected to PORTC
+; 0000 003D      PORTA=(1<<PORTA7) | (1<<PORTA6) |(1<<PORTA5) |(1<<PORTA4) |(0<<PORTA3) |(0<<PORTA2) |(0<<PORTA1) | (0<<PORTA7);
+	LDI  R30,LOW(240)
+	OUT  0x1B,R30
+; 0000 003E      DDRC = 0xFF; // Assuming seven segment display is connected to PORTC
 	LDI  R30,LOW(255)
 	OUT  0x14,R30
-; 0000 0034     DDRD = 0xFF; // Assuming LEDs are connected to PORTD
+; 0000 003F      DDRD = 0xFF; // Assuming LEDs are connected to PORTD
 	OUT  0x11,R30
-; 0000 0035 
-; 0000 0036 // Timer/Counter 1 initialization
-; 0000 0037 // Clock source: System Clock
-; 0000 0038 // Clock value: 31.250 kHz
-; 0000 0039 // Mode: CTC top=OCR1A
-; 0000 003A // OC1A output: Disconnected
-; 0000 003B // OC1B output: Disconnected
-; 0000 003C // Noise Canceler: Off
-; 0000 003D // Input Capture on Falling Edge
-; 0000 003E // Timer Period: 1 s
-; 0000 003F // Timer1 Overflow Interrupt: Off
-; 0000 0040 // Input Capture Interrupt: Off
-; 0000 0041 // Compare A Match Interrupt: On
-; 0000 0042 // Compare B Match Interrupt: On
-; 0000 0043 TCCR1A=(0<<COM1A1) | (0<<COM1A0) | (0<<COM1B1) | (0<<COM1B0) | (0<<WGM11) | (0<<WGM10);
+; 0000 0040 
+; 0000 0041 // Timer/Counter 0 initialization
+; 0000 0042 // Clock source: System Clock
+; 0000 0043 // Clock value: 7.813 kHz
+; 0000 0044 // Mode: CTC top=OCR0
+; 0000 0045 // OC0 output: Disconnected
+; 0000 0046 // Timer Period: 9.984 ms
+; 0000 0047 TCCR0=(0<<WGM00) | (0<<COM01) | (0<<COM00) | (1<<WGM01) | (1<<CS02) | (0<<CS01) | (1<<CS00);
+	LDI  R30,LOW(13)
+	OUT  0x33,R30
+; 0000 0048 TCNT0=0x00;
 	LDI  R30,LOW(0)
-	OUT  0x2F,R30
-; 0000 0044 TCCR1B=(0<<ICNC1) | (0<<ICES1) | (0<<WGM13) | (1<<WGM12) | (1<<CS12) | (0<<CS11) | (0<<CS10);
-	LDI  R30,LOW(12)
-	OUT  0x2E,R30
-; 0000 0045 TCNT1H=0x00;
-	LDI  R30,LOW(0)
-	OUT  0x2D,R30
-; 0000 0046 TCNT1L=0x00;
-	OUT  0x2C,R30
-; 0000 0047 ICR1H=0x00;
-	OUT  0x27,R30
-; 0000 0048 ICR1L=0x00;
-	OUT  0x26,R30
-; 0000 0049 OCR1AH=0x7A;
-	LDI  R30,LOW(122)
-	OUT  0x2B,R30
-; 0000 004A OCR1AL=0x11;
-	LDI  R30,LOW(17)
-	OUT  0x2A,R30
-; 0000 004B OCR1BH=0x00;
-	LDI  R30,LOW(0)
-	OUT  0x29,R30
-; 0000 004C OCR1BL=0x00;
-	OUT  0x28,R30
-; 0000 004D 
-; 0000 004E 
-; 0000 004F // Timer(s)/Counter(s) Interrupt(s) initialization
-; 0000 0050 TIMSK=(0<<OCIE2) | (0<<TOIE2) | (0<<TICIE1) | (1<<OCIE1A) | (1<<OCIE1B) | (0<<TOIE1) | (1<<OCIE0) | (0<<TOIE0);
+	OUT  0x32,R30
+; 0000 0049 OCR0=0x4D;
+	LDI  R30,LOW(77)
+	OUT  0x3C,R30
+; 0000 004A 
+; 0000 004B // Timer/Counter 1 initialization
+; 0000 004C // Clock source: System Clock
+; 0000 004D // Clock value: 31.250 kHz
+; 0000 004E // Mode: CTC top=OCR1A
+; 0000 004F // OC1A output: Disconnected
+; 0000 0050 // OC1B output: Disconnected
+; 0000 0051 // Noise Canceler: Off
+; 0000 0052 // Input Capture on Falling Edge
+; 0000 0053 // Timer Period: 1 s
+; 0000 0054 // Timer1 Overflow Interrupt: Off
+; 0000 0055 // Input Capture Interrupt: Off
+; 0000 0056 // Compare A Match Interrupt: On
+; 0000 0057 // Compare B Match Interrupt: On
+; 0000 0058 //TCCR1A=(0<<COM1A1) | (0<<COM1A0) | (0<<COM1B1) | (0<<COM1B0) | (0<<WGM11) | (0<<WGM10);
+; 0000 0059 //TCCR1B=(0<<ICNC1) | (0<<ICES1) | (0<<WGM13) | (1<<WGM12) | (1<<CS12) | (0<<CS11) | (0<<CS10);
+; 0000 005A //TCNT1H=0x00;
+; 0000 005B //TCNT1L=0x00;
+; 0000 005C //ICR1H=0x00;
+; 0000 005D //ICR1L=0x00;
+; 0000 005E //OCR1AH=0x7A;
+; 0000 005F //OCR1AL=0x11;
+; 0000 0060 //OCR1BH=0x00;
+; 0000 0061 //OCR1BL=0x00;
+; 0000 0062 //
+; 0000 0063 //
+; 0000 0064 //// Timer(s)/Counter(s) Interrupt(s) initialization
+; 0000 0065 TIMSK=(0<<OCIE2) | (0<<TOIE2) | (0<<TICIE1) | (1<<OCIE1A) | (1<<OCIE1B) | (0<<TOIE1) | (1<<OCIE0) | (0<<TOIE0);
 	LDI  R30,LOW(26)
 	OUT  0x39,R30
-; 0000 0051 
-; 0000 0052 
-; 0000 0053  // Read minutes input from keypad
-; 0000 0054 // Global enable interrupts
-; 0000 0055 #asm("sei")
+; 0000 0066 
+; 0000 0067 
+; 0000 0068  // Read minutes input from keypad
+; 0000 0069 // Global enable interrupts
+; 0000 006A #asm("sei")
 	sei
-; 0000 0056 while (1)
-_0x4:
-; 0000 0057       {
-; 0000 0058       // Place your code here
-; 0000 0059       char key = read_keypad();
-; 0000 005A       //if(key != 0)
-; 0000 005B       //display_on_seven_segment(key);
-; 0000 005C 
-; 0000 005D 
-; 0000 005E       }
+; 0000 006B while (1)
+_0x5:
+; 0000 006C       {
+; 0000 006D       // Place your code here
+; 0000 006E       char key = read_keypad();
+; 0000 006F       if(key != 16)
 	SBIW R28,1
 ;	key -> Y+0
 	RCALL _read_keypad
 	ST   Y,R30
+	LD   R26,Y
+	CPI  R26,LOW(0x10)
+	BREQ _0x8
+; 0000 0070       display_on_seven_segment(key);
+	CLR  R27
+	RCALL _display_on_seven_segment
+; 0000 0071 
+; 0000 0072       }
+_0x8:
 	ADIW R28,1
-	RJMP _0x4
-; 0000 005F }
-_0x7:
-	RJMP _0x7
+	RJMP _0x5
+; 0000 0073 }
+_0x9:
+	RJMP _0x9
 ; .FEND
 ;
 ;
 ;
 ;
 ;void display_on_seven_segment(int number) {
-; 0000 0064 void display_on_seven_segment(int number) {
-; 0000 0065 
-; 0000 0066     // Display the given number on the seven segment display
-; 0000 0067     int i;
-; 0000 0068     const int segments[] =
-; 0000 0069      {
-; 0000 006A         // 0bGFEDCBA
-; 0000 006B         0x40, // 0
-; 0000 006C         0x79, // 1
-; 0000 006D         0x24, // 2
-; 0000 006E         0x30, // 3
-; 0000 006F         0x19, // 4
-; 0000 0070         0x12, // 5
-; 0000 0071         0x02, // 6
-; 0000 0072         0x78, // 7
-; 0000 0073         0x00, // 8
-; 0000 0074         0x10 // 9
-; 0000 0075     };
-; 0000 0076 
-; 0000 0077 
-; 0000 0078 
-; 0000 0079     // Extract digits from the number
-; 0000 007A      digit[1] = number / 10;
+; 0000 0078 void display_on_seven_segment(int number) {
+_display_on_seven_segment:
+; .FSTART _display_on_seven_segment
+; 0000 0079 
+; 0000 007A     // Display the given number on the seven segment display
+; 0000 007B     int i;
+; 0000 007C     const int segments[] =
+; 0000 007D      {
+; 0000 007E         // 0bGFEDCBA
+; 0000 007F         0x40, // 0
+; 0000 0080         0x79, // 1
+; 0000 0081         0x24, // 2
+; 0000 0082         0x30, // 3
+; 0000 0083         0x19, // 4
+; 0000 0084         0x12, // 5
+; 0000 0085         0x02, // 6
+; 0000 0086         0x78, // 7
+; 0000 0087         0x00, // 8
+; 0000 0088         0x10 // 9
+; 0000 0089     };
+; 0000 008A 
+; 0000 008B 
+; 0000 008C 
+; 0000 008D     // Extract digits from the number
+; 0000 008E      digit[1] = number / 10;
+	ST   -Y,R27
+	ST   -Y,R26
+	SBIW R28,20
+	LDI  R24,20
+	LDI  R26,LOW(0)
+	LDI  R27,HIGH(0)
+	LDI  R30,LOW(_0xA*2)
+	LDI  R31,HIGH(_0xA*2)
+	CALL __INITLOCB
+	ST   -Y,R17
+	ST   -Y,R16
 ;	number -> Y+22
 ;	i -> R16,R17
 ;	segments -> Y+2
-; 0000 007B      digit[2] = number % 10;
-; 0000 007C      LCD_ref = 0x01;
-; 0000 007D     for (i=0; i<4; i++)
-; 0000 007E     {
-; 0000 007F          PORTD = LCD_ref;
-; 0000 0080          PORTC = ~(segments[digit[i]]);
-; 0000 0081          delay_ms(1);
-; 0000 0082          LCD_ref = LCD_ref<<1;
-; 0000 0083     }
-; 0000 0084 
-; 0000 0085 }
+	LDD  R26,Y+22
+	LDD  R27,Y+22+1
+	LDI  R30,LOW(10)
+	LDI  R31,HIGH(10)
+	CALL __DIVW21
+	__PUTW1MN _digit,2
+; 0000 008F      digit[2] = number % 10;
+	LDD  R26,Y+22
+	LDD  R27,Y+22+1
+	LDI  R30,LOW(10)
+	LDI  R31,HIGH(10)
+	CALL __MODW21
+	__PUTW1MN _digit,4
+; 0000 0090      //PORTC = ~(segments[digit[i]]);
+; 0000 0091 
+; 0000 0092 }
+	LDD  R17,Y+1
+	LDD  R16,Y+0
+	ADIW R28,24
+	RET
+; .FEND
 ;
+;//
+;//        char keypad_layout[4][4] = {
+;//            {'x', '6', '5', '4'},
+;//            {'-', '3', '2', '1'},
+;//            {'+', '=', '0', 'c'}
+;//        };
+;//
 ;
-;        char keypad_layout[4][4] = {
-;            {'x', '6', '5', '4'},
-;            {'-', '3', '2', '1'},
-;            {'+', '=', '0', 'c'}
-;        };
-
-	.DSEG
-;
-;
-;    int read_keypad() {
-; 0000 008F int read_keypad() {
-
-	.CSEG
+;    char read_keypad() {
+; 0000 009C char read_keypad() {
 _read_keypad:
 ; .FSTART _read_keypad
-; 0000 0090         // Read input from keypad and return the pressed key
-; 0000 0091         char readCols;
-; 0000 0092         row++;
-	ST   -Y,R17
-;	readCols -> R17
-	MOVW R30,R8
-	ADIW R30,1
-	MOVW R8,R30
-; 0000 0093         if(row>3)row=0;
-	LDI  R30,LOW(3)
-	LDI  R31,HIGH(3)
-	CP   R30,R8
-	CPC  R31,R9
-	BRGE _0xD
-	CLR  R8
-	CLR  R9
-; 0000 0094         PORTA =  0x01<<row;
-_0xD:
-	MOV  R30,R8
-	LDI  R26,LOW(1)
-	CALL __LSLB12
-	OUT  0x1B,R30
-; 0000 0095         //delay_ms(500);
-; 0000 0096         return;
+; 0000 009D 
+; 0000 009E    // Loop through each ROW and check for key press
+; 0000 009F 
+; 0000 00A0     PORTA.0=0;PORTA.1=1;PORTA.2=1;PORTA.3=1;
+	CBI  0x1B,0
+	SBI  0x1B,1
+	SBI  0x1B,2
+	SBI  0x1B,3
+; 0000 00A1     if(!PINA.4) return 0;
+	SBIC 0x19,4
+	RJMP _0x13
 	LDI  R30,LOW(0)
-	LDI  R31,HIGH(0)
-	RJMP _0x2000001
-; 0000 0097         readCols = (PINA & 0xF0)>>4;
-; 0000 0098         if(readCols)
-; 0000 0099         {
-; 0000 009A             if(readCols & 0x01)
-; 0000 009B             {
-; 0000 009C             return (row*4 + 0);
-; 0000 009D             }
-; 0000 009E             else if(readCols & 0x02)
-; 0000 009F             {
-; 0000 00A0             return (row*4 + 1);
-; 0000 00A1             }
-; 0000 00A2             else if(readCols & 0x04)
-; 0000 00A3             {
-; 0000 00A4             return (row*4 + 2);
-; 0000 00A5             }
-; 0000 00A6             else if(readCols & 0x08)
-_0x13:
-	SBRS R17,3
-	RJMP _0x15
-; 0000 00A7             {
-; 0000 00A8             return (row*4 + 3);
-	MOVW R30,R8
-	CALL __LSLW2
-	ADIW R30,3
-	RJMP _0x2000001
-; 0000 00A9             }
-; 0000 00AA         return 0;
-_0x15:
-	LDI  R30,LOW(0)
-	LDI  R31,HIGH(0)
-; 0000 00AB         }
-; 0000 00AC 
-; 0000 00AD 
-; 0000 00AE 
-; 0000 00AF 
-; 0000 00B0 
-; 0000 00B1 
-; 0000 00B2 
-; 0000 00B3 //
-; 0000 00B4 //        // Loop through each ROW and check for key press
-; 0000 00B5 //
-; 0000 00B6 //        int row = -1, col =-1;
-; 0000 00B7 //
-; 0000 00B8 //            for (row = 0; row < 4; row++) {
-; 0000 00B9 //                // Activate current ROW
-; 0000 00BA //                PORTA = row_ref[row];
-; 0000 00BB //                delay_ms(6);
-; 0000 00BC //                if (col0 == 1)
-; 0000 00BD //                {
-; 0000 00BE //                    while(col1 == 1);
-; 0000 00BF //                    col=0;
-; 0000 00C0 //                    break;
-; 0000 00C1 //                }
-; 0000 00C2 //                if (col1 == 1)
-; 0000 00C3 //                {
-; 0000 00C4 //                    while(col1 == 1);
-; 0000 00C5 //                    col=1;
-; 0000 00C6 //                    break;
-; 0000 00C7 //                }
-; 0000 00C8 //                if (col2 == 1)
-; 0000 00C9 //                {
-; 0000 00CA //                    while(col1 == 1);
-; 0000 00CB //                    col=2;
-; 0000 00CC //                    break;
-; 0000 00CD //                }
-; 0000 00CE //                if (col3 == 1)
-; 0000 00CF //                {
-; 0000 00D0 //                    while(col1 == 1);
-; 0000 00D1 //                    col=3;
-; 0000 00D2 //                    break;
-; 0000 00D3 //                }
-; 0000 00D4 //            }
-; 0000 00D5 //            if(col != -1)
-; 0000 00D6 //            {
-; 0000 00D7 //             return  (row*4 + col);
-; 0000 00D8 //            }
-; 0000 00D9         }
-_0x2000001:
-	LD   R17,Y+
 	RET
+; 0000 00A2     if(!PINA.5) return 1;
+_0x13:
+	SBIC 0x19,5
+	RJMP _0x14
+	LDI  R30,LOW(1)
+	RET
+; 0000 00A3     if(!PINA.6) return 2;
+_0x14:
+	SBIC 0x19,6
+	RJMP _0x15
+	LDI  R30,LOW(2)
+	RET
+; 0000 00A4     if(!PINA.7) return 3;
+_0x15:
+	SBIC 0x19,7
+	RJMP _0x16
+	LDI  R30,LOW(3)
+	RET
+; 0000 00A5     PORTA.0=1;PORTA.1=0;PORTA.2=1;PORTA.3=1;
+_0x16:
+	SBI  0x1B,0
+	CBI  0x1B,1
+	SBI  0x1B,2
+	SBI  0x1B,3
+; 0000 00A6     if(!PINA.4) return 4;
+	SBIC 0x19,4
+	RJMP _0x1F
+	LDI  R30,LOW(4)
+	RET
+; 0000 00A7     if(!PINA.5) return 5;
+_0x1F:
+	SBIC 0x19,5
+	RJMP _0x20
+	LDI  R30,LOW(5)
+	RET
+; 0000 00A8     if(!PINA.6) return 6;
+_0x20:
+	SBIC 0x19,6
+	RJMP _0x21
+	LDI  R30,LOW(6)
+	RET
+; 0000 00A9     if(!PINA.7) return 7;
+_0x21:
+	SBIC 0x19,7
+	RJMP _0x22
+	LDI  R30,LOW(7)
+	RET
+; 0000 00AA     PORTA.0=1;PORTA.1=1;PORTA.2=0;PORTA.3=1;
+_0x22:
+	SBI  0x1B,0
+	SBI  0x1B,1
+	CBI  0x1B,2
+	SBI  0x1B,3
+; 0000 00AB     if(!PINA.4) return 8;
+	SBIC 0x19,4
+	RJMP _0x2B
+	LDI  R30,LOW(8)
+	RET
+; 0000 00AC     if(!PINA.5) return 9;
+_0x2B:
+	SBIC 0x19,5
+	RJMP _0x2C
+	LDI  R30,LOW(9)
+	RET
+; 0000 00AD     if(!PINA.6) return 10;
+_0x2C:
+	SBIC 0x19,6
+	RJMP _0x2D
+	LDI  R30,LOW(10)
+	RET
+; 0000 00AE     if(!PINA.7) return 11;
+_0x2D:
+	SBIC 0x19,7
+	RJMP _0x2E
+	LDI  R30,LOW(11)
+	RET
+; 0000 00AF     PORTA.0=1;PORTA.1=1;PORTA.2=1;PORTA.3=0;
+_0x2E:
+	SBI  0x1B,0
+	SBI  0x1B,1
+	SBI  0x1B,2
+	CBI  0x1B,3
+; 0000 00B0     if(!PINA.4) return 12;
+	SBIC 0x19,4
+	RJMP _0x37
+	LDI  R30,LOW(12)
+	RET
+; 0000 00B1     if(!PINA.5) return 13;
+_0x37:
+	SBIC 0x19,5
+	RJMP _0x38
+	LDI  R30,LOW(13)
+	RET
+; 0000 00B2     if(!PINA.6) return 14;
+_0x38:
+	SBIC 0x19,6
+	RJMP _0x39
+	LDI  R30,LOW(14)
+	RET
+; 0000 00B3     if(!PINA.7) return 15;
+_0x39:
+	SBIC 0x19,7
+	RJMP _0x3A
+	LDI  R30,LOW(15)
+	RET
+; 0000 00B4     return 16;
+_0x3A:
+	LDI  R30,LOW(16)
+	RET
+; 0000 00B5 
+; 0000 00B6         }
 ; .FEND
 ;
 ;
@@ -1557,23 +1653,95 @@ _digit:
 	.CSEG
 
 	.CSEG
-__LSLB12:
-	TST  R30
-	MOV  R0,R30
-	MOV  R30,R26
-	BREQ __LSLB12R
-__LSLB12L:
-	LSL  R30
-	DEC  R0
-	BRNE __LSLB12L
-__LSLB12R:
+__ANEGW1:
+	NEG  R31
+	NEG  R30
+	SBCI R31,0
 	RET
 
-__LSLW2:
-	LSL  R30
-	ROL  R31
-	LSL  R30
-	ROL  R31
+__DIVW21U:
+	CLR  R0
+	CLR  R1
+	LDI  R25,16
+__DIVW21U1:
+	LSL  R26
+	ROL  R27
+	ROL  R0
+	ROL  R1
+	SUB  R0,R30
+	SBC  R1,R31
+	BRCC __DIVW21U2
+	ADD  R0,R30
+	ADC  R1,R31
+	RJMP __DIVW21U3
+__DIVW21U2:
+	SBR  R26,1
+__DIVW21U3:
+	DEC  R25
+	BRNE __DIVW21U1
+	MOVW R30,R26
+	MOVW R26,R0
+	RET
+
+__DIVW21:
+	RCALL __CHKSIGNW
+	RCALL __DIVW21U
+	BRTC __DIVW211
+	RCALL __ANEGW1
+__DIVW211:
+	RET
+
+__MODW21:
+	CLT
+	SBRS R27,7
+	RJMP __MODW211
+	COM  R26
+	COM  R27
+	ADIW R26,1
+	SET
+__MODW211:
+	SBRC R31,7
+	RCALL __ANEGW1
+	RCALL __DIVW21U
+	MOVW R30,R26
+	BRTC __MODW212
+	RCALL __ANEGW1
+__MODW212:
+	RET
+
+__CHKSIGNW:
+	CLT
+	SBRS R31,7
+	RJMP __CHKSW1
+	RCALL __ANEGW1
+	SET
+__CHKSW1:
+	SBRS R27,7
+	RJMP __CHKSW2
+	COM  R26
+	COM  R27
+	ADIW R26,1
+	BLD  R0,0
+	INC  R0
+	BST  R0,0
+__CHKSW2:
+	RET
+
+__GETW1P:
+	LD   R30,X+
+	LD   R31,X
+	SBIW R26,1
+	RET
+
+__INITLOCB:
+__INITLOCW:
+	ADD  R26,R28
+	ADC  R27,R29
+__INITLOC0:
+	LPM  R0,Z+
+	ST   X+,R0
+	DEC  R24
+	BRNE __INITLOC0
 	RET
 
 ;END OF CODE MARKER

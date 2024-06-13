@@ -14,10 +14,11 @@ LCD_ref                                                                         
 i                                                                                 R6,R7        2
 row                                                                               R8,R9        2
 col                                                                               R10,R11      2
-input                                                                             R12,R13      2
+pos                                                                               R12,R13      2
 
 FLASH Allocation [words]
 Function                                                                          Address   Size
 ------------------------------------------------------------------------------------------------
-main                                                                              0x00072     39
-read_keypad                                                                       0x00099     30
+timer0_comp_isr                                                                   0x00076     47
+main                                                                              0x000A5     27
+display_on_seven_segment                                                          0x000C0     36
