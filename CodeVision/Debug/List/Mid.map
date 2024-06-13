@@ -19,6 +19,5 @@ input                                                                           
 FLASH Allocation [words]
 Function                                                                          Address   Size
 ------------------------------------------------------------------------------------------------
-timer0_comp_isr                                                                   0x0006C      1
-main                                                                              0x0006D     44
-display_on_seven_segment                                                          0x00099     73
+main                                                                              0x00072     39
+read_keypad                                                                       0x00099     30
