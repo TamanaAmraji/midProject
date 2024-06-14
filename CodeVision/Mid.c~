@@ -3,7 +3,8 @@
 // Declare your global variables here
 int LCD_ref=0x01, i=0, digit[4];       
 unsigned char digit1=0,digit2= 0, key;
-   int minutes = 0,seconds = 0;
+   int minutes = 0,seconds = 0, test=50,remaining_seconds;          
+   int remaining_seconds;
 #define col0    PINA.0
 #define col1    PINA.1
 #define col2    PINA.2
@@ -39,6 +40,10 @@ void display_on_seven_segment_second(char second);
 char read_keypad();
 int getval(char key);
 void blink_segment_minute(char mode);
+void countdown_timer(int minutes, int seconds, char key);
+void LightDancer();
+
+
 
 interrupt [TIM0_COMP] void timer0_comp_isr(void)
 {
@@ -52,16 +57,23 @@ interrupt [TIM0_COMP] void timer0_comp_isr(void)
     {
         i = 0;
         LCD_ref = 0x01;
-    }            
- 
+    }   
+
+}
+
+interrupt [TIM1_COMPA] void timer1_compa_isr(void)
+{
+    remaining_seconds--; 
+}
+
+interrupt [TIM1_COMPB] void timer1_compb_isr(void)
+{
+   
 }
 
 void main(void)
 {
 // Declare your local variables here
-  
-
-
     // Initialize ports and pins
     // Configure SEVENSEG_PORT, KEYPAD_PORT, BUZZER_PORT, and LED_PORT as required 
     
@@ -96,17 +108,16 @@ OCR0=0x4D;
 // Input Capture Interrupt: Off
 // Compare A Match Interrupt: On
 // Compare B Match Interrupt: On
-//TCCR1A=(0<<COM1A1) | (0<<COM1A0) | (0<<COM1B1) | (0<<COM1B0) | (0<<WGM11) | (0<<WGM10);
-//TCCR1B=(0<<ICNC1) | (0<<ICES1) | (0<<WGM13) | (1<<WGM12) | (1<<CS12) | (0<<CS11) | (0<<CS10);
-//TCNT1H=0x00;
-//TCNT1L=0x00;
-//ICR1H=0x00;
-//ICR1L=0x00;
-//OCR1AH=0x7A;
-//OCR1AL=0x11;
-//OCR1BH=0x00;
-//OCR1BL=0x00;
-//
+TCCR1A=(0<<COM1A1) | (0<<COM1A0) | (0<<COM1B1) | (0<<COM1B0) | (0<<WGM11) | (0<<WGM10);
+TCCR1B=(0<<ICNC1) | (0<<ICES1) | (0<<WGM13) | (1<<WGM12) | (1<<CS12) | (0<<CS11) | (0<<CS10);
+TCNT1H=0x00;
+TCNT1L=0x00;
+ICR1H=0x00;
+ICR1L=0x00;
+OCR1AH=0x7A;
+OCR1AL=0x11;
+OCR1BH=0x00;
+OCR1BL=0x00;
 //
 //// Timer(s)/Counter(s) Interrupt(s) initialization
 TIMSK=(0<<OCIE2) | (0<<TOIE2) | (0<<TICIE1) | (1<<OCIE1A) | (1<<OCIE1B) | (0<<TOIE1) | (1<<OCIE0) | (0<<TOIE0);
@@ -119,9 +130,11 @@ while (1)
       {  
       // Place your code here 
        key = read_keypad();  
-       getval(key);
+       getval(key); 
+       countdown_timer( minutes, 50,key); 
+      // display_on_seven_segment_second(seconds); 
+ 
 //       blink_segment(1); 
-    display_on_seven_segment_second(seconds);
 
     }
 }
@@ -138,6 +151,30 @@ void blink_segment(char mode)
   PIND.1=0;
   
  }
+}
+
+
+
+void countdown_timer(int minutes, int seconds, char key) {
+//remaining_seconds= seconds;
+    // Countdown from the given minutes and seconds  
+    if (key == 'c')
+    {          
+     display_on_seven_segment_second(20);
+       // LightDancer();
+       // TCCR1B=(0<<ICNC1) | (0<<ICES1) | (1<<WGM13) | (1<<WGM12) | (1<<CS12) | (0<<CS11) | (0<<CS10);
+    }       
+    
+    
+    // Calculate total seconds  
+//    if (minutes<= 0)
+//    {
+//     LightDancer();
+//    }   
+    //else{
+
+
+    //}
 }
 
 void display_on_seven_segment_minute(char minute) {     
@@ -189,7 +226,7 @@ void display_on_seven_segment_second(char second) {
         if( key == '=')
            { 
                 seconds = digit2;
-                //display_on_seven_segment_second(digit2);
+             //   display_on_seven_segment_second(digit2);
                 digit1 =0;
                 break;
            } 
@@ -219,6 +256,32 @@ void display_on_seven_segment_second(char second) {
             
 
       }   
-    }
+    } 
+    
+    	void LightDancer()
+	{
+		int a;
+		char led[]= {
+			0b10000000,
+			0b01000000,
+			0b00100000,
+			0b00010000,
+			0b00001000,
+			0b00000100,
+			0b00000010,
+			0b00000001};
+				
+		for (a=0;a<=7;a++)
+		{
+			PORTB=led[a];
+			delay_ms(100);
+		};
+		for (a=6;a>=0;a--)
+		{
+			PORTC=led[a];
+			delay_ms(100);
+		};
+	}  
+
 
 

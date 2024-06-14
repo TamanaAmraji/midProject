@@ -3,7 +3,8 @@ Variable                                                                        
 ------------------------------------------------------------------------------------------------
 digit                                                                             0x0260       8
 seconds                                                                           0x0268       2
-keys                                                                              0x026A      16
+remaining_seconds                                                                 0x026A       2
+keys                                                                              0x026C      16
 
 EEPROM Allocation [bytes]
 Variable                                                                          Address   Size
@@ -22,7 +23,10 @@ minutes                                                                         
 FLASH Allocation [words]
 Function                                                                          Address   Size
 ------------------------------------------------------------------------------------------------
-timer0_comp_isr                                                                   0x00075     49
-main                                                                              0x000A6     26
-display_on_seven_segment_minute                                                   0x000C0     22
-getval                                                                            0x00138     49
+timer0_comp_isr                                                                   0x00076     38
+timer1_compa_isr                                                                  0x0009C     15
+timer1_compb_isr                                                                  0x000AB      1
+main                                                                              0x000AC     48
+countdown_timer                                                                   0x000DC      7
+getval                                                                            0x00145     49
+LightDancer                                                                       0x00176     59
