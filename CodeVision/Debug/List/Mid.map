@@ -1,7 +1,9 @@
 RAM Allocation [bytes]
 Variable                                                                          Address   Size
 ------------------------------------------------------------------------------------------------
-digit                                                                             0x0260       4
+digit                                                                             0x0260       8
+seconds                                                                           0x0268       2
+keys                                                                              0x026A      16
 
 EEPROM Allocation [bytes]
 Variable                                                                          Address   Size
@@ -12,13 +14,15 @@ Variable                                                                        
 ------------------------------------------------------------------------------------------------
 LCD_ref                                                                           R4,R5        2
 i                                                                                 R6,R7        2
-row                                                                               R8,R9        2
-col                                                                               R10,R11      2
-pos                                                                               R12,R13      2
+digit1                                                                            R9           1
+digit2                                                                            R8           1
+key                                                                               R11          1
+minutes                                                                           R12,R13      2
 
 FLASH Allocation [words]
 Function                                                                          Address   Size
 ------------------------------------------------------------------------------------------------
-timer0_comp_isr                                                                   0x00076     47
-main                                                                              0x000A5     27
-display_on_seven_segment                                                          0x000C0     36
+timer0_comp_isr                                                                   0x00075     49
+main                                                                              0x000A6     26
+display_on_seven_segment_minute                                                   0x000C0     22
+getval                                                                            0x00138     49
