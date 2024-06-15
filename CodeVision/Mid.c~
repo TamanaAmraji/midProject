@@ -2,9 +2,8 @@
 #include <delay.h>
 // Declare your global variables here
 int LCD_ref=0x01, i=0, digit[4];       
-unsigned char digit1=0,digit2= 0, key;
-   int minutes = 0,seconds = 0, test=50,remaining_seconds;          
-   int remaining_seconds;
+unsigned char digit1=0,digit2= 0, key, flag;
+   int minutes = 0,seconds = 0, test=50,remaining_seconds, remaining_minutes;          
 #define col0    PINA.0
 #define col1    PINA.1
 #define col2    PINA.2
@@ -12,7 +11,6 @@ unsigned char digit1=0,digit2= 0, key;
 
     const int segments[] =
      {
-        // 0bGFEDCBA
         0x40, // 0
         0x79, // 1
         0x24, // 2
@@ -30,7 +28,14 @@ unsigned char digit1=0,digit2= 0, key;
               '4', '5', '6', 'x',
               '1', '2', '3', '-',
               'c', '0', '=', '+'
-              };
+              };   
+              
+//                  char keys[]= {                      //based on keypad model we use
+//              '/','1', '2', '3',
+//              '+','4', '5', '6',
+//              '-','7', '8', '9',
+//              'x','c', '0', '='
+//              };
     
 //char ref[]= {0xF7,0xF6,0xFB,0xF7};  
 
@@ -40,8 +45,8 @@ void display_on_seven_segment_second(char second);
 char read_keypad();
 int getval(char key);
 void blink_segment_minute(char mode);
-void countdown_timer(int minutes, int seconds, char key);
 void LightDancer();
+void sound_buzzer();
 
 
 
@@ -49,8 +54,8 @@ interrupt [TIM0_COMP] void timer0_comp_isr(void)
 {
  //Place your code here 
      
-    PORTD = ~(LCD_ref); 
-    PORTC = ~(segments[digit[i]]);      
+    PORTD = (LCD_ref); 
+    PORTC = (segments[digit[i]]);      
     LCD_ref = LCD_ref<<1; 
     i++;    
     if (i == 4) 
@@ -64,6 +69,19 @@ interrupt [TIM0_COMP] void timer0_comp_isr(void)
 interrupt [TIM1_COMPA] void timer1_compa_isr(void)
 {
     remaining_seconds--; 
+    
+    if (remaining_seconds == 0) 
+    {  
+        if (remaining_minutes == 0) 
+        {
+        LightDancer(); sound_buzzer(); 
+        } 
+        else 
+        {
+        remaining_seconds = 59;
+        remaining_minutes --;
+        }
+    }
 }
 
 interrupt [TIM1_COMPB] void timer1_compb_isr(void)
@@ -74,8 +92,7 @@ interrupt [TIM1_COMPB] void timer1_compb_isr(void)
 void main(void)
 {
 // Declare your local variables here
-    // Initialize ports and pins
-    // Configure SEVENSEG_PORT, KEYPAD_PORT, BUZZER_PORT, and LED_PORT as required 
+
     
     // Set ROWS as outputs and COLS as inputs
      DDRB = 0xFF; // Assuming keypad is connected to PORTB pins 0-3 as COLS
@@ -86,30 +103,11 @@ void main(void)
      DDRD = 0xFF; // Assuming LEDs are connected to PORTD   
 
 // Timer/Counter 0 initialization
-// Clock source: System Clock
-// Clock value: 7.813 kHz
-// Mode: CTC top=OCR0
-// OC0 output: Disconnected
-// Timer Period: 9.984 ms
 TCCR0=(0<<WGM00) | (0<<COM01) | (0<<COM00) | (1<<WGM01) | (1<<CS02) | (0<<CS01) | (1<<CS00);
 TCNT0=0x00;
-OCR0=0x4D;
+OCR0=0x7C;
 
 // Timer/Counter 1 initialization
-// Clock source: System Clock
-// Clock value: 31.250 kHz
-// Mode: CTC top=OCR1A
-// OC1A output: Disconnected
-// OC1B output: Disconnected
-// Noise Canceler: Off
-// Input Capture on Falling Edge
-// Timer Period: 1 s
-// Timer1 Overflow Interrupt: Off
-// Input Capture Interrupt: Off
-// Compare A Match Interrupt: On
-// Compare B Match Interrupt: On
-TCCR1A=(0<<COM1A1) | (0<<COM1A0) | (0<<COM1B1) | (0<<COM1B0) | (0<<WGM11) | (0<<WGM10);
-TCCR1B=(0<<ICNC1) | (0<<ICES1) | (0<<WGM13) | (1<<WGM12) | (1<<CS12) | (0<<CS11) | (0<<CS10);
 TCNT1H=0x00;
 TCNT1L=0x00;
 ICR1H=0x00;
@@ -129,14 +127,12 @@ TIMSK=(0<<OCIE2) | (0<<TOIE2) | (0<<TICIE1) | (1<<OCIE1A) | (1<<OCIE1B) | (0<<TO
 while (1)
       {  
       // Place your code here 
-       key = read_keypad();  
-       getval(key); 
-       countdown_timer( minutes, 50,key); 
-      // display_on_seven_segment_second(seconds); 
- 
-//       blink_segment(1); 
-
-    }
+//       key = read_keypad();  
+//       getval(key); 
+//       display_on_seven_segment_second(remaining_seconds);  
+//       display_on_seven_segment_minute(remaining_minutes);
+        LightDancer();
+      }
 }
 
 
@@ -155,39 +151,17 @@ void blink_segment(char mode)
 
 
 
-void countdown_timer(int minutes, int seconds, char key) {
-//remaining_seconds= seconds;
-    // Countdown from the given minutes and seconds  
-    if (key == 'c')
-    {          
-     display_on_seven_segment_second(20);
-       // LightDancer();
-       // TCCR1B=(0<<ICNC1) | (0<<ICES1) | (1<<WGM13) | (1<<WGM12) | (1<<CS12) | (0<<CS11) | (0<<CS10);
-    }       
-    
-    
-    // Calculate total seconds  
-//    if (minutes<= 0)
-//    {
-//     LightDancer();
-//    }   
-    //else{
-
-
-    //}
-}
-
 void display_on_seven_segment_minute(char minute) {     
 
     // Extract digits from the number
-     digit[0] = minute / 10;
-     digit[1] = minute % 10;            
+     digit[1] = minute % 10; 
+     digit[0] = minute / 10;            
 }
 void display_on_seven_segment_second(char second) {     
 
     // Extract digits from the number
-     digit[2] = second / 10;
-     digit[3] = second % 10;            
+     digit[3] = second % 10;
+     digit[2] = second / 10;            
 }
     
 
@@ -219,39 +193,47 @@ void display_on_seven_segment_second(char second) {
     }
     int getval(char key)
     {       
-        if (key != 16)  //if any key was pressed
+        if (key != 16)  //if any key was pressed 
        {    
        while(1)
        {  
+        if (remaining_seconds) 
+        {
+         if ( key == 'c') 
+         {     
+           
+           TCCR1B=(0<<ICNC1) | (0<<ICES1) | (0<<WGM13) | (1<<WGM12) | (1<<CS12) | (0<<CS11) | (0<<CS10); 
+           break;
+         }
+        }
+
         if( key == '=')
-           { 
+           {  
                 seconds = digit2;
-             //   display_on_seven_segment_second(digit2);
+                remaining_seconds= seconds;
                 digit1 =0;
                 break;
            } 
-        if ( key == '+')        //if + was entered 
-           {
-            minutes= digit2;   
-           // display_on_seven_segment_minute(digit2); //show on 7Seg 
-            digit1=0;   
-                       
+            if ( key == '+')        //if + was entered 
+           {    
+            minutes= digit2; 
+            remaining_minutes= minutes;  
+            digit1=0;         
             break; 
             } 
-           if(digit1)
-           {
-              digit2= digit1*10 + key - '0';
-              return digit2;
-           }       
+            if (digit1 || flag)
+            { 
+             digit2 = (digit1 *10) + key - '0';
+             break;
+            }
+            
+      
           if ( (key >= '0') && (key<= '9') )
            { 
             digit1 = key - '0';
-           // digit1= digit2 + key - '0';
+            if (digit1 ==0) flag = 1;
             return digit1;   
            }    
-
-
-
        } 
             
 
@@ -261,27 +243,37 @@ void display_on_seven_segment_second(char second) {
     	void LightDancer()
 	{
 		int a;
-		char led[]= {
-			0b10000000,
-			0b01000000,
-			0b00100000,
-			0b00010000,
-			0b00001000,
-			0b00000100,
-			0b00000010,
-			0b00000001};
+		char led[]=
+         {
+			0b11111111,
+			0b11100111,
+			0b11000011,
+			0b10000001,
+			0b00000000,
+         };
 				
-		for (a=0;a<=7;a++)
+		for (a=0;a<=5;a++)
 		{
 			PORTB=led[a];
 			delay_ms(100);
-		};
-		for (a=6;a>=0;a--)
+		}; 
+        for (a=4;a>=0;a--)
 		{
-			PORTC=led[a];
+			PORTB= ~(led[a]);
 			delay_ms(100);
-		};
+		}
 	}  
+    
+    void sound_buzzer() 
+{
+    TCCR0=(0<<WGM00) | (0<<COM01) | (0<<COM00) | (0<<WGM01) | (0<<CS02) | (0<<CS01) | (0<<CS00);
+    PIND.5 = 1;
+    delay_ms(500); 
+    PIND.5 = 0;    
+    PIND.5 = 1;
+    delay_ms(500); 
+    PIND.5 = 0;
+}
 
 
 
