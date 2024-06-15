@@ -5,7 +5,8 @@ digit                                                                           
 seconds                                                                           0x0268       2
 remaining_seconds                                                                 0x026A       2
 remaining_minutes                                                                 0x026C       2
-keys                                                                              0x026E      16
+mode                                                                              0x026E       2
+keys                                                                              0x0270      16
 
 EEPROM Allocation [bytes]
 Variable                                                                          Address   Size
@@ -25,12 +26,15 @@ minutes                                                                         
 FLASH Allocation [words]
 Function                                                                          Address   Size
 ------------------------------------------------------------------------------------------------
-timer0_comp_isr                                                                   0x00076     48
-timer1_compa_isr                                                                  0x000A6     62
-timer1_compb_isr                                                                  0x000E4      1
-main                                                                              0x000E5     42
-display_on_seven_segment_minute                                                   0x0010F     11
-display_on_seven_segment_second                                                   0x0011A     11
-getval                                                                            0x00187     75
-LightDancer                                                                       0x001D2     54
-sound_buzzer                                                                      0x00208      5
+timer0_comp_isr                                                                   0x00079     40
+timer1_compa_isr                                                                  0x000A1     62
+timer1_compb_isr                                                                  0x000DF      1
+main                                                                              0x000E0     42
+Ready_segment                                                                     0x0010A     32
+display_on_seven_segment_minute                                                   0x0012A     11
+display_on_seven_segment_second                                                   0x00135     11
+read_keypad                                                                       0x00140     98
+getval                                                                            0x001A2    113
+LightDancer                                                                       0x00213     54
+sound_buzzer                                                                      0x00249      3
+Finish                                                                            0x0024C     16
