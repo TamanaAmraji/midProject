@@ -8,7 +8,7 @@ unsigned char digit1=0,digit2= 0, key, flag;
 #define col1    PINA.1
 #define col2    PINA.2
 #define col3    PINA.3 
-#define Buzzer  PIND.5 
+#define Buzzer  PIND.6 
 #define LED_PORT PORTB
 
     const int segments[] =
@@ -31,14 +31,14 @@ unsigned char digit1=0,digit2= 0, key, flag;
               '1', '2', '3', '-',
               'c', '0', '=', '+'
               };   
-              
-//                  char keys[]= {          //based on keypad model we use in Lab
+//              
+//   char keys[]= {                       //based on keypad model we use in Lab
 //              '/','1', '2', '3',
 //              '+','4', '5', '6',
 //              '-','7', '8', '9',
 //              'x','c', '0', '='
 //              };
-    
+////    
 //char ref[]= {0xF7,0xF6,0xFB,0xF7};  
 
 // Function prototypes
@@ -103,7 +103,7 @@ DDRD = 0xFF;
 // Timer/Counter 0 initialization
 TCCR0=(0<<WGM00) | (0<<COM01) | (0<<COM00) | (1<<WGM01) | (1<<CS02) | (0<<CS01) | (1<<CS00);
 TCNT0=0x00;
-OCR0=0x7C;
+OCR0=0x63;
 
 // Timer/Counter 1 initialization
 TCNT1H=0x00;
@@ -152,9 +152,8 @@ while (1)
        {
         TCCR0=(0<<WGM00) | (0<<COM01) | (0<<COM00) | (1<<WGM01) | (1<<CS02) | (0<<CS01) | (1<<CS00); 
        }  
-        
- 
     }
+    
     void display_on_seven_segment_minute(char minute) 
     {     
         // Extract digits from the number
@@ -192,6 +191,7 @@ while (1)
         if(!PINA.7) return keys[15];
         return 16; 
     }
+    
     int getval(char key)
     {      
         if (key != 16)  //if any key was pressed 
@@ -233,8 +233,19 @@ while (1)
             break; 
         } 
         if (digit1 || flag)
-        { 
-            digit2 = (digit1 *10) + key - '0';
+        {     
+            if (flag ==1) 
+            {
+                digit2 = /*(digit1 *10) +*/ key - '0'; 
+                flag =0;
+                break; 
+            }
+            else 
+            { 
+                digit2 = (digit1 *10) + key - '0';
+                break;
+            }
+             
             break;
         }
         if ( (key >= '0') && (key<= '9') )
@@ -274,13 +285,15 @@ while (1)
     
     void sound_buzzer() 
     {
-    Buzzer = 1;
-    delay_ms(500); 
-    Buzzer = 0;    
-    Buzzer = 1;
-    delay_ms(500); 
-    Buzzer = 0;
-    } 
+        PORTD = 0xFF;
+//        delay_ms(500); 
+//        PORTD = 0;    
+//        delay_ms(500); 
+//        PORTD = 1; 
+//        delay_ms(500); 
+//        PORTD = 0; 
+    }
+     
     void Finish()
     {
      TCCR0=(0<<WGM00) | (0<<COM01) | (0<<COM00) | (0<<WGM01) | (0<<CS02) | (0<<CS01) | (0<<CS00);

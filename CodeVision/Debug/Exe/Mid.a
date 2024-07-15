@@ -34,7 +34,7 @@
 ;#define col1    PINA.1
 ;#define col2    PINA.2
 ;#define col3    PINA.3
-;#define Buzzer  PIND.5
+;#define Buzzer  PIND.6
 ;#define LED_PORT PORTB
 ;
 ;    const int segments[] =
@@ -57,14 +57,14 @@
 ;              '1', '2', '3', '-',
 ;              'c', '0', '=', '+'
 ;              };
-;
-;//                  char keys[]= {          //based on keypad model we use in Lab
+;//
+;//   char keys[]= {                       //based on keypad model we use in Lab
 ;//              '/','1', '2', '3',
 ;//              '+','4', '5', '6',
 ;//              '-','7', '8', '9',
 ;//              'x','c', '0', '='
 ;//              };
-;
+;////
 ;//char ref[]= {0xF7,0xF6,0xFB,0xF7};
 ;
 ;// Function prototypes
@@ -207,7 +207,7 @@
 ; 0000 0069 TCNT0=0x00;
 ;PCODE: $00000057 VOL: 0
 ;PCODE: $00000058 VOL: 0
-; 0000 006A OCR0=0x7C;
+; 0000 006A OCR0=0x63;
 ;PCODE: $00000059 VOL: 0
 ;PCODE: $0000005A VOL: 0
 ; 0000 006B 
@@ -329,20 +329,19 @@
 ;PCODE: $0000009E VOL: 0
 ;PCODE: $0000009F VOL: 0
 ; 0000 009A        }
-; 0000 009B 
-; 0000 009C 
-; 0000 009D     }
+; 0000 009B     }
 ;PCODE: $000000A0 VOL: 0
 ;PCODE: $000000A1 VOL: 0
 ;PCODE: $000000A2 VOL: 0
 ;PCODE: $000000A3 VOL: 0
 ;PCODE: $000000A4 VOL: 0
+;
 ;    void display_on_seven_segment_minute(char minute)
-; 0000 009F     {
+; 0000 009E     {
 ;PCODE: $000000A5 VOL: 0
 ;PCODE: $000000A6 VOL: 0
-; 0000 00A0         // Extract digits from the number
-; 0000 00A1          digit[1] = minute % 10;
+; 0000 009F         // Extract digits from the number
+; 0000 00A0          digit[1] = minute % 10;
 ;PCODE: $000000A7 VOL: 0
 ;	minute -> Y+0
 ;PCODE: $000000A8 VOL: 0
@@ -351,22 +350,22 @@
 ;PCODE: $000000AB VOL: 0
 ;PCODE: $000000AC VOL: 0
 ;PCODE: $000000AD VOL: 0
-; 0000 00A2          digit[0] = minute / 10;
+; 0000 00A1          digit[0] = minute / 10;
 ;PCODE: $000000AE VOL: 0
 ;PCODE: $000000AF VOL: 0
 ;PCODE: $000000B0 VOL: 0
 ;PCODE: $000000B1 VOL: 0
 ;PCODE: $000000B2 VOL: 0
-; 0000 00A3     }
+; 0000 00A2     }
 ;PCODE: $000000B3 VOL: 0
 ;PCODE: $000000B4 VOL: 0
 ;PCODE: $000000B5 VOL: 0
 ;    void display_on_seven_segment_second(char second)
-; 0000 00A5      {
+; 0000 00A4      {
 ;PCODE: $000000B6 VOL: 0
 ;PCODE: $000000B7 VOL: 0
-; 0000 00A6         // Extract digits from the number
-; 0000 00A7          digit[3] = second % 10;
+; 0000 00A5         // Extract digits from the number
+; 0000 00A6          digit[3] = second % 10;
 ;PCODE: $000000B8 VOL: 0
 ;	second -> Y+0
 ;PCODE: $000000B9 VOL: 0
@@ -375,24 +374,24 @@
 ;PCODE: $000000BC VOL: 0
 ;PCODE: $000000BD VOL: 0
 ;PCODE: $000000BE VOL: 0
-; 0000 00A8          digit[2] = second / 10;
+; 0000 00A7          digit[2] = second / 10;
 ;PCODE: $000000BF VOL: 0
 ;PCODE: $000000C0 VOL: 0
 ;PCODE: $000000C1 VOL: 0
 ;PCODE: $000000C2 VOL: 0
 ;PCODE: $000000C3 VOL: 0
 ;PCODE: $000000C4 VOL: 0
-; 0000 00A9     }
+; 0000 00A8     }
 ;PCODE: $000000C5 VOL: 0
 ;PCODE: $000000C6 VOL: 0
 ;PCODE: $000000C7 VOL: 0
 ;
 ;    char read_keypad() {
-; 0000 00AB char read_keypad() {
+; 0000 00AA char read_keypad() {
 ;PCODE: $000000C8 VOL: 0
 ;PCODE: $000000C9 VOL: 0
-; 0000 00AC    // Loop through each ROW and check for key press
-; 0000 00AD         PORTA.0=0;PORTA.1=1;PORTA.2=1;PORTA.3=1;
+; 0000 00AB    // Loop through each ROW and check for key press
+; 0000 00AC         PORTA.0=0;PORTA.1=1;PORTA.2=1;PORTA.3=1;
 ;PCODE: $000000CA VOL: 0
 ;PCODE: $000000CB VOL: 0
 ;PCODE: $000000CC VOL: 0
@@ -401,13 +400,13 @@
 ;PCODE: $000000CF VOL: 0
 ;PCODE: $000000D0 VOL: 0
 ;PCODE: $000000D1 VOL: 0
-; 0000 00AE         if(!PINA.4) return keys[0];
+; 0000 00AD         if(!PINA.4) return keys[0];
 ;PCODE: $000000D2 VOL: 0
 ;PCODE: $000000D3 VOL: 0
 ;PCODE: $000000D4 VOL: 0
 ;PCODE: $000000D5 VOL: 0
 ;PCODE: $000000D6 VOL: 0
-; 0000 00AF         if(!PINA.5) return keys[1];
+; 0000 00AE         if(!PINA.5) return keys[1];
 ;PCODE: $000000D7 VOL: 0
 ;PCODE: $000000D8 VOL: 0
 ;PCODE: $000000D9 VOL: 0
@@ -415,7 +414,7 @@
 ;PCODE: $000000DB VOL: 0
 ;PCODE: $000000DC VOL: 0
 ;PCODE: $000000DD VOL: 0
-; 0000 00B0         if(!PINA.6) return keys[2];
+; 0000 00AF         if(!PINA.6) return keys[2];
 ;PCODE: $000000DE VOL: 0
 ;PCODE: $000000DF VOL: 0
 ;PCODE: $000000E0 VOL: 0
@@ -423,7 +422,7 @@
 ;PCODE: $000000E2 VOL: 0
 ;PCODE: $000000E3 VOL: 0
 ;PCODE: $000000E4 VOL: 0
-; 0000 00B1         if(!PINA.7) return keys[3];
+; 0000 00B0         if(!PINA.7) return keys[3];
 ;PCODE: $000000E5 VOL: 0
 ;PCODE: $000000E6 VOL: 0
 ;PCODE: $000000E7 VOL: 0
@@ -431,7 +430,7 @@
 ;PCODE: $000000E9 VOL: 0
 ;PCODE: $000000EA VOL: 0
 ;PCODE: $000000EB VOL: 0
-; 0000 00B2         PORTA.0=1;PORTA.1=0;PORTA.2=1;PORTA.3=1;
+; 0000 00B1         PORTA.0=1;PORTA.1=0;PORTA.2=1;PORTA.3=1;
 ;PCODE: $000000EC VOL: 0
 ;PCODE: $000000ED VOL: 0
 ;PCODE: $000000EE VOL: 0
@@ -441,14 +440,14 @@
 ;PCODE: $000000F2 VOL: 0
 ;PCODE: $000000F3 VOL: 0
 ;PCODE: $000000F4 VOL: 0
-; 0000 00B3         if(!PINA.4) return keys[4];
+; 0000 00B2         if(!PINA.4) return keys[4];
 ;PCODE: $000000F5 VOL: 0
 ;PCODE: $000000F6 VOL: 0
 ;PCODE: $000000F7 VOL: 0
 ;PCODE: $000000F8 VOL: 0
 ;PCODE: $000000F9 VOL: 0
 ;PCODE: $000000FA VOL: 0
-; 0000 00B4         if(!PINA.5) return keys[5];
+; 0000 00B3         if(!PINA.5) return keys[5];
 ;PCODE: $000000FB VOL: 0
 ;PCODE: $000000FC VOL: 0
 ;PCODE: $000000FD VOL: 0
@@ -456,7 +455,7 @@
 ;PCODE: $000000FF VOL: 0
 ;PCODE: $00000100 VOL: 0
 ;PCODE: $00000101 VOL: 0
-; 0000 00B5         if(!PINA.6) return keys[6];
+; 0000 00B4         if(!PINA.6) return keys[6];
 ;PCODE: $00000102 VOL: 0
 ;PCODE: $00000103 VOL: 0
 ;PCODE: $00000104 VOL: 0
@@ -464,7 +463,7 @@
 ;PCODE: $00000106 VOL: 0
 ;PCODE: $00000107 VOL: 0
 ;PCODE: $00000108 VOL: 0
-; 0000 00B6         if(!PINA.7) return keys[7];
+; 0000 00B5         if(!PINA.7) return keys[7];
 ;PCODE: $00000109 VOL: 0
 ;PCODE: $0000010A VOL: 0
 ;PCODE: $0000010B VOL: 0
@@ -472,7 +471,7 @@
 ;PCODE: $0000010D VOL: 0
 ;PCODE: $0000010E VOL: 0
 ;PCODE: $0000010F VOL: 0
-; 0000 00B7         PORTA.0=1;PORTA.1=1;PORTA.2=0;PORTA.3=1;
+; 0000 00B6         PORTA.0=1;PORTA.1=1;PORTA.2=0;PORTA.3=1;
 ;PCODE: $00000110 VOL: 0
 ;PCODE: $00000111 VOL: 0
 ;PCODE: $00000112 VOL: 0
@@ -482,14 +481,14 @@
 ;PCODE: $00000116 VOL: 0
 ;PCODE: $00000117 VOL: 0
 ;PCODE: $00000118 VOL: 0
-; 0000 00B8         if(!PINA.4) return keys[8];
+; 0000 00B7         if(!PINA.4) return keys[8];
 ;PCODE: $00000119 VOL: 0
 ;PCODE: $0000011A VOL: 0
 ;PCODE: $0000011B VOL: 0
 ;PCODE: $0000011C VOL: 0
 ;PCODE: $0000011D VOL: 0
 ;PCODE: $0000011E VOL: 0
-; 0000 00B9         if(!PINA.5) return keys[9];
+; 0000 00B8         if(!PINA.5) return keys[9];
 ;PCODE: $0000011F VOL: 0
 ;PCODE: $00000120 VOL: 0
 ;PCODE: $00000121 VOL: 0
@@ -497,7 +496,7 @@
 ;PCODE: $00000123 VOL: 0
 ;PCODE: $00000124 VOL: 0
 ;PCODE: $00000125 VOL: 0
-; 0000 00BA         if(!PINA.6) return keys[10];
+; 0000 00B9         if(!PINA.6) return keys[10];
 ;PCODE: $00000126 VOL: 0
 ;PCODE: $00000127 VOL: 0
 ;PCODE: $00000128 VOL: 0
@@ -505,7 +504,7 @@
 ;PCODE: $0000012A VOL: 0
 ;PCODE: $0000012B VOL: 0
 ;PCODE: $0000012C VOL: 0
-; 0000 00BB         if(!PINA.7) return keys[11];
+; 0000 00BA         if(!PINA.7) return keys[11];
 ;PCODE: $0000012D VOL: 0
 ;PCODE: $0000012E VOL: 0
 ;PCODE: $0000012F VOL: 0
@@ -513,7 +512,7 @@
 ;PCODE: $00000131 VOL: 0
 ;PCODE: $00000132 VOL: 0
 ;PCODE: $00000133 VOL: 0
-; 0000 00BC         PORTA.0=1;PORTA.1=1;PORTA.2=1;PORTA.3=0;
+; 0000 00BB         PORTA.0=1;PORTA.1=1;PORTA.2=1;PORTA.3=0;
 ;PCODE: $00000134 VOL: 0
 ;PCODE: $00000135 VOL: 0
 ;PCODE: $00000136 VOL: 0
@@ -523,14 +522,14 @@
 ;PCODE: $0000013A VOL: 0
 ;PCODE: $0000013B VOL: 0
 ;PCODE: $0000013C VOL: 0
-; 0000 00BD         if(!PINA.4) return keys[12];
+; 0000 00BC         if(!PINA.4) return keys[12];
 ;PCODE: $0000013D VOL: 0
 ;PCODE: $0000013E VOL: 0
 ;PCODE: $0000013F VOL: 0
 ;PCODE: $00000140 VOL: 0
 ;PCODE: $00000141 VOL: 0
 ;PCODE: $00000142 VOL: 0
-; 0000 00BE         if(!PINA.5) return keys[13];
+; 0000 00BD         if(!PINA.5) return keys[13];
 ;PCODE: $00000143 VOL: 0
 ;PCODE: $00000144 VOL: 0
 ;PCODE: $00000145 VOL: 0
@@ -538,7 +537,7 @@
 ;PCODE: $00000147 VOL: 0
 ;PCODE: $00000148 VOL: 0
 ;PCODE: $00000149 VOL: 0
-; 0000 00BF         if(!PINA.6) return keys[14];
+; 0000 00BE         if(!PINA.6) return keys[14];
 ;PCODE: $0000014A VOL: 0
 ;PCODE: $0000014B VOL: 0
 ;PCODE: $0000014C VOL: 0
@@ -546,7 +545,7 @@
 ;PCODE: $0000014E VOL: 0
 ;PCODE: $0000014F VOL: 0
 ;PCODE: $00000150 VOL: 0
-; 0000 00C0         if(!PINA.7) return keys[15];
+; 0000 00BF         if(!PINA.7) return keys[15];
 ;PCODE: $00000151 VOL: 0
 ;PCODE: $00000152 VOL: 0
 ;PCODE: $00000153 VOL: 0
@@ -554,12 +553,13 @@
 ;PCODE: $00000155 VOL: 0
 ;PCODE: $00000156 VOL: 0
 ;PCODE: $00000157 VOL: 0
-; 0000 00C1         return 16;
+; 0000 00C0         return 16;
 ;PCODE: $00000158 VOL: 0
 ;PCODE: $00000159 VOL: 0
 ;PCODE: $0000015A VOL: 0
-; 0000 00C2     }
+; 0000 00C1     }
 ;PCODE: $0000015B VOL: 0
+;
 ;    int getval(char key)
 ; 0000 00C4     {
 ;PCODE: $0000015C VOL: 0
@@ -672,20 +672,25 @@
 ;PCODE: $0000019F VOL: 0
 ;PCODE: $000001A0 VOL: 0
 ; 0000 00EC         {
-; 0000 00ED             digit2 = (digit1 *10) + key - '0';
+; 0000 00ED             if (flag ==1)
 ;PCODE: $000001A1 VOL: 0
 ;PCODE: $000001A2 VOL: 0
 ;PCODE: $000001A3 VOL: 0
+; 0000 00EE             {
+; 0000 00EF                 digit2 = /*(digit1 *10) +*/ key - '0';
 ;PCODE: $000001A4 VOL: 0
 ;PCODE: $000001A5 VOL: 0
 ;PCODE: $000001A6 VOL: 0
+; 0000 00F0                 flag =0;
 ;PCODE: $000001A7 VOL: 0
-; 0000 00EE             break;
+; 0000 00F1                 break;
 ;PCODE: $000001A8 VOL: 0
-; 0000 00EF         }
-; 0000 00F0         if ( (key >= '0') && (key<= '9') )
+; 0000 00F2             }
+; 0000 00F3             else
 ;PCODE: $000001A9 VOL: 0
 ;PCODE: $000001AA VOL: 0
+; 0000 00F4             {
+; 0000 00F5                 digit2 = (digit1 *10) + key - '0';
 ;PCODE: $000001AB VOL: 0
 ;PCODE: $000001AC VOL: 0
 ;PCODE: $000001AD VOL: 0
@@ -693,69 +698,73 @@
 ;PCODE: $000001AF VOL: 0
 ;PCODE: $000001B0 VOL: 0
 ;PCODE: $000001B1 VOL: 0
+; 0000 00F6                 break;
 ;PCODE: $000001B2 VOL: 0
+; 0000 00F7             }
 ;PCODE: $000001B3 VOL: 0
-; 0000 00F1         {
-; 0000 00F2             digit1 = key - '0';
+; 0000 00F8 
+; 0000 00F9             break;
 ;PCODE: $000001B4 VOL: 0
+; 0000 00FA         }
+; 0000 00FB         if ( (key >= '0') && (key<= '9') )
 ;PCODE: $000001B5 VOL: 0
 ;PCODE: $000001B6 VOL: 0
-; 0000 00F3             if (digit1 ==0) flag = 1;
 ;PCODE: $000001B7 VOL: 0
 ;PCODE: $000001B8 VOL: 0
 ;PCODE: $000001B9 VOL: 0
 ;PCODE: $000001BA VOL: 0
-; 0000 00F4             return digit1;
 ;PCODE: $000001BB VOL: 0
 ;PCODE: $000001BC VOL: 0
 ;PCODE: $000001BD VOL: 0
 ;PCODE: $000001BE VOL: 0
 ;PCODE: $000001BF VOL: 0
-; 0000 00F5         }
-; 0000 00F6        }
+; 0000 00FC         {
+; 0000 00FD             digit1 = key - '0';
 ;PCODE: $000001C0 VOL: 0
 ;PCODE: $000001C1 VOL: 0
 ;PCODE: $000001C2 VOL: 0
-; 0000 00F7       }
-; 0000 00F8       Ready_segment(mode);
+; 0000 00FE             if (digit1 ==0) flag = 1;
 ;PCODE: $000001C3 VOL: 0
 ;PCODE: $000001C4 VOL: 0
 ;PCODE: $000001C5 VOL: 0
-; 0000 00F9     }
 ;PCODE: $000001C6 VOL: 0
+; 0000 00FF             return digit1;
 ;PCODE: $000001C7 VOL: 0
 ;PCODE: $000001C8 VOL: 0
-;
-;    void LightDancer()
-; 0000 00FC 	{
 ;PCODE: $000001C9 VOL: 0
 ;PCODE: $000001CA VOL: 0
-; 0000 00FD 		int a;
-; 0000 00FE 		char led[]=
-; 0000 00FF          {
-; 0000 0100 			0b11111111,
-; 0000 0101 			0b11100111,
-; 0000 0102 			0b11000011,
-; 0000 0103 			0b10000001,
-; 0000 0104 			0b00000000,
-; 0000 0105          };
-; 0000 0106 
-; 0000 0107 		for (a=0;a<=5;a++)
 ;PCODE: $000001CB VOL: 0
+; 0000 0100         }
+; 0000 0101        }
 ;PCODE: $000001CC VOL: 0
 ;PCODE: $000001CD VOL: 0
 ;PCODE: $000001CE VOL: 0
+; 0000 0102       }
+; 0000 0103       Ready_segment(mode);
 ;PCODE: $000001CF VOL: 0
 ;PCODE: $000001D0 VOL: 0
 ;PCODE: $000001D1 VOL: 0
+; 0000 0104     }
 ;PCODE: $000001D2 VOL: 0
 ;PCODE: $000001D3 VOL: 0
 ;PCODE: $000001D4 VOL: 0
+;
+;    void LightDancer()
+; 0000 0107 	{
 ;PCODE: $000001D5 VOL: 0
 ;PCODE: $000001D6 VOL: 0
+; 0000 0108 		int a;
+; 0000 0109 		char led[]=
+; 0000 010A          {
+; 0000 010B 			0b11111111,
+; 0000 010C 			0b11100111,
+; 0000 010D 			0b11000011,
+; 0000 010E 			0b10000001,
+; 0000 010F 			0b00000000,
+; 0000 0110          };
+; 0000 0111 
+; 0000 0112 		for (a=0;a<=5;a++)
 ;PCODE: $000001D7 VOL: 0
-;	a -> R16,R17
-;	led -> Y+2
 ;PCODE: $000001D8 VOL: 0
 ;PCODE: $000001D9 VOL: 0
 ;PCODE: $000001DA VOL: 0
@@ -765,108 +774,114 @@
 ;PCODE: $000001DE VOL: 0
 ;PCODE: $000001DF VOL: 0
 ;PCODE: $000001E0 VOL: 0
-; 0000 0108 		{
-; 0000 0109 			PORTB=led[a];
 ;PCODE: $000001E1 VOL: 0
 ;PCODE: $000001E2 VOL: 0
 ;PCODE: $000001E3 VOL: 0
+;	a -> R16,R17
+;	led -> Y+2
 ;PCODE: $000001E4 VOL: 0
-; 0000 010A 			delay_ms(100);
 ;PCODE: $000001E5 VOL: 0
 ;PCODE: $000001E6 VOL: 0
 ;PCODE: $000001E7 VOL: 0
-; 0000 010B 		};
 ;PCODE: $000001E8 VOL: 0
 ;PCODE: $000001E9 VOL: 0
 ;PCODE: $000001EA VOL: 0
 ;PCODE: $000001EB VOL: 0
 ;PCODE: $000001EC VOL: 0
-; 0000 010C         for (a=4;a>=0;a--)
+; 0000 0113 		{
+; 0000 0114 			PORTB=led[a];
 ;PCODE: $000001ED VOL: 0
 ;PCODE: $000001EE VOL: 0
 ;PCODE: $000001EF VOL: 0
 ;PCODE: $000001F0 VOL: 0
+; 0000 0115 			delay_ms(100);
 ;PCODE: $000001F1 VOL: 0
 ;PCODE: $000001F2 VOL: 0
 ;PCODE: $000001F3 VOL: 0
+; 0000 0116 		};
 ;PCODE: $000001F4 VOL: 0
-; 0000 010D 		{
-; 0000 010E 			LED_PORT= ~(led[a]);
 ;PCODE: $000001F5 VOL: 0
 ;PCODE: $000001F6 VOL: 0
 ;PCODE: $000001F7 VOL: 0
 ;PCODE: $000001F8 VOL: 0
+; 0000 0117         for (a=4;a>=0;a--)
 ;PCODE: $000001F9 VOL: 0
-; 0000 010F 			delay_ms(100);
 ;PCODE: $000001FA VOL: 0
 ;PCODE: $000001FB VOL: 0
 ;PCODE: $000001FC VOL: 0
-; 0000 0110 		}
 ;PCODE: $000001FD VOL: 0
 ;PCODE: $000001FE VOL: 0
 ;PCODE: $000001FF VOL: 0
 ;PCODE: $00000200 VOL: 0
+; 0000 0118 		{
+; 0000 0119 			LED_PORT= ~(led[a]);
 ;PCODE: $00000201 VOL: 0
-; 0000 0111 	}
 ;PCODE: $00000202 VOL: 0
 ;PCODE: $00000203 VOL: 0
 ;PCODE: $00000204 VOL: 0
 ;PCODE: $00000205 VOL: 0
+; 0000 011A 			delay_ms(100);
 ;PCODE: $00000206 VOL: 0
 ;PCODE: $00000207 VOL: 0
 ;PCODE: $00000208 VOL: 0
-;
-;    void sound_buzzer()
-; 0000 0114     {
+; 0000 011B 		}
 ;PCODE: $00000209 VOL: 0
 ;PCODE: $0000020A VOL: 0
-; 0000 0115     Buzzer = 1;
 ;PCODE: $0000020B VOL: 0
 ;PCODE: $0000020C VOL: 0
-; 0000 0116     delay_ms(500);
 ;PCODE: $0000020D VOL: 0
+; 0000 011C 	}
 ;PCODE: $0000020E VOL: 0
-; 0000 0117     Buzzer = 0;
 ;PCODE: $0000020F VOL: 0
 ;PCODE: $00000210 VOL: 0
-; 0000 0118     Buzzer = 1;
 ;PCODE: $00000211 VOL: 0
 ;PCODE: $00000212 VOL: 0
-; 0000 0119     delay_ms(500);
 ;PCODE: $00000213 VOL: 0
 ;PCODE: $00000214 VOL: 0
-; 0000 011A     Buzzer = 0;
+;
+;    void sound_buzzer()
+; 0000 011F     {
 ;PCODE: $00000215 VOL: 0
 ;PCODE: $00000216 VOL: 0
-; 0000 011B     }
+; 0000 0120         PORTD = 0xFF;
 ;PCODE: $00000217 VOL: 0
 ;PCODE: $00000218 VOL: 0
-;    void Finish()
-; 0000 011D     {
+; 0000 0121 //        delay_ms(500);
+; 0000 0122 //        PORTD = 0;
+; 0000 0123 //        delay_ms(500);
+; 0000 0124 //        PORTD = 1;
+; 0000 0125 //        delay_ms(500);
+; 0000 0126 //        PORTD = 0;
+; 0000 0127     }
 ;PCODE: $00000219 VOL: 0
 ;PCODE: $0000021A VOL: 0
-; 0000 011E      TCCR0=(0<<WGM00) | (0<<COM01) | (0<<COM00) | (0<<WGM01) | (0<<CS02) | (0<<CS01) | (0<<CS00);
+;
+;    void Finish()
+; 0000 012A     {
 ;PCODE: $0000021B VOL: 0
 ;PCODE: $0000021C VOL: 0
-; 0000 011F      TCCR1B=(0<<ICNC1) | (0<<ICES1) | (0<<WGM13) | (0<<WGM12) | (0<<CS12) | (0<<CS11) | (0<<CS10);
+; 0000 012B      TCCR0=(0<<WGM00) | (0<<COM01) | (0<<COM00) | (0<<WGM01) | (0<<CS02) | (0<<CS01) | (0<<CS00);
 ;PCODE: $0000021D VOL: 0
 ;PCODE: $0000021E VOL: 0
-; 0000 0120      sound_buzzer();
+; 0000 012C      TCCR1B=(0<<ICNC1) | (0<<ICES1) | (0<<WGM13) | (0<<WGM12) | (0<<CS12) | (0<<CS11) | (0<<CS10);
 ;PCODE: $0000021F VOL: 0
-; 0000 0121      LightDancer();
 ;PCODE: $00000220 VOL: 0
-; 0000 0122      PORTC = 0x40;
+; 0000 012D      sound_buzzer();
 ;PCODE: $00000221 VOL: 0
+; 0000 012E      LightDancer();
 ;PCODE: $00000222 VOL: 0
-; 0000 0123      PORTD = 0x0F;
+; 0000 012F      PORTC = 0x40;
 ;PCODE: $00000223 VOL: 0
 ;PCODE: $00000224 VOL: 0
-; 0000 0124      mode = 1;
+; 0000 0130      PORTD = 0x0F;
 ;PCODE: $00000225 VOL: 0
 ;PCODE: $00000226 VOL: 0
-; 0000 0125     }
+; 0000 0131      mode = 1;
 ;PCODE: $00000227 VOL: 0
 ;PCODE: $00000228 VOL: 0
+; 0000 0132     }
+;PCODE: $00000229 VOL: 0
+;PCODE: $0000022A VOL: 0
 ;
 ;
 ;

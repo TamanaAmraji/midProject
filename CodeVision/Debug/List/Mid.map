@@ -34,7 +34,7 @@ Ready_segment                                                                   
 display_on_seven_segment_minute                                                   0x0012A     11
 display_on_seven_segment_second                                                   0x00135     11
 read_keypad                                                                       0x00140     98
-getval                                                                            0x001A2    113
-LightDancer                                                                       0x00213     54
-sound_buzzer                                                                      0x00249      3
-Finish                                                                            0x0024C     16
+getval                                                                            0x001A2    121
+LightDancer                                                                       0x0021B     54
+sound_buzzer                                                                      0x00251      3
+Finish                                                                            0x00254     16

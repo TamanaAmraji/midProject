@@ -1255,7 +1255,7 @@ __GLOBAL_INI_END:
 ;#define col1    PINA.1
 ;#define col2    PINA.2
 ;#define col3    PINA.3
-;#define Buzzer  PIND.5
+;#define Buzzer  PIND.6
 ;#define LED_PORT PORTB
 ;
 ;    const int segments[] =
@@ -1278,14 +1278,14 @@ __GLOBAL_INI_END:
 ;              '1', '2', '3', '-',
 ;              'c', '0', '=', '+'
 ;              };
-;
-;//                  char keys[]= {          //based on keypad model we use in Lab
+;//
+;//   char keys[]= {                       //based on keypad model we use in Lab
 ;//              '/','1', '2', '3',
 ;//              '+','4', '5', '6',
 ;//              '-','7', '8', '9',
 ;//              'x','c', '0', '='
 ;//              };
-;
+;////
 ;//char ref[]= {0xF7,0xF6,0xFB,0xF7};
 ;
 ;// Function prototypes
@@ -1477,8 +1477,8 @@ _main:
 ; 0000 0069 TCNT0=0x00;
 	LDI  R30,LOW(0)
 	OUT  0x32,R30
-; 0000 006A OCR0=0x7C;
-	LDI  R30,LOW(124)
+; 0000 006A OCR0=0x63;
+	LDI  R30,LOW(99)
 	OUT  0x3C,R30
 ; 0000 006B 
 ; 0000 006C // Timer/Counter 1 initialization
@@ -1590,172 +1590,172 @@ _0xE:
 	LDI  R30,LOW(13)
 	OUT  0x33,R30
 ; 0000 009A        }
-; 0000 009B 
-; 0000 009C 
-; 0000 009D     }
+; 0000 009B     }
 _0x11:
 _0x10:
 	ADIW R28,2
 	RET
 ; .FEND
+;
 ;    void display_on_seven_segment_minute(char minute)
-; 0000 009F     {
+; 0000 009E     {
 _display_on_seven_segment_minute:
 ; .FSTART _display_on_seven_segment_minute
-; 0000 00A0         // Extract digits from the number
-; 0000 00A1          digit[1] = minute % 10;
+; 0000 009F         // Extract digits from the number
+; 0000 00A0          digit[1] = minute % 10;
 	RCALL SUBOPT_0x1
 ;	minute -> Y+0
 	__PUTW1MN _digit,2
-; 0000 00A2          digit[0] = minute / 10;
+; 0000 00A1          digit[0] = minute / 10;
 	RCALL SUBOPT_0x2
 	STS  _digit,R30
 	STS  _digit+1,R31
-; 0000 00A3     }
+; 0000 00A2     }
 	RJMP _0x2000001
 ; .FEND
 ;    void display_on_seven_segment_second(char second)
-; 0000 00A5      {
+; 0000 00A4      {
 _display_on_seven_segment_second:
 ; .FSTART _display_on_seven_segment_second
-; 0000 00A6         // Extract digits from the number
-; 0000 00A7          digit[3] = second % 10;
+; 0000 00A5         // Extract digits from the number
+; 0000 00A6          digit[3] = second % 10;
 	RCALL SUBOPT_0x1
 ;	second -> Y+0
 	__PUTW1MN _digit,6
-; 0000 00A8          digit[2] = second / 10;
+; 0000 00A7          digit[2] = second / 10;
 	RCALL SUBOPT_0x2
 	__PUTW1MN _digit,4
-; 0000 00A9     }
+; 0000 00A8     }
 	RJMP _0x2000001
 ; .FEND
 ;
 ;    char read_keypad() {
-; 0000 00AB char read_keypad() {
+; 0000 00AA char read_keypad() {
 _read_keypad:
 ; .FSTART _read_keypad
-; 0000 00AC    // Loop through each ROW and check for key press
-; 0000 00AD         PORTA.0=0;PORTA.1=1;PORTA.2=1;PORTA.3=1;
+; 0000 00AB    // Loop through each ROW and check for key press
+; 0000 00AC         PORTA.0=0;PORTA.1=1;PORTA.2=1;PORTA.3=1;
 	CBI  0x1B,0
 	SBI  0x1B,1
 	SBI  0x1B,2
 	SBI  0x1B,3
-; 0000 00AE         if(!PINA.4) return keys[0];
+; 0000 00AD         if(!PINA.4) return keys[0];
 	SBIC 0x19,4
 	RJMP _0x1A
 	LDS  R30,_keys
 	RET
-; 0000 00AF         if(!PINA.5) return keys[1];
+; 0000 00AE         if(!PINA.5) return keys[1];
 _0x1A:
 	SBIC 0x19,5
 	RJMP _0x1B
 	__GETB1MN _keys,1
 	RET
-; 0000 00B0         if(!PINA.6) return keys[2];
+; 0000 00AF         if(!PINA.6) return keys[2];
 _0x1B:
 	SBIC 0x19,6
 	RJMP _0x1C
 	__GETB1MN _keys,2
 	RET
-; 0000 00B1         if(!PINA.7) return keys[3];
+; 0000 00B0         if(!PINA.7) return keys[3];
 _0x1C:
 	SBIC 0x19,7
 	RJMP _0x1D
 	__GETB1MN _keys,3
 	RET
-; 0000 00B2         PORTA.0=1;PORTA.1=0;PORTA.2=1;PORTA.3=1;
+; 0000 00B1         PORTA.0=1;PORTA.1=0;PORTA.2=1;PORTA.3=1;
 _0x1D:
 	SBI  0x1B,0
 	CBI  0x1B,1
 	SBI  0x1B,2
 	SBI  0x1B,3
-; 0000 00B3         if(!PINA.4) return keys[4];
+; 0000 00B2         if(!PINA.4) return keys[4];
 	SBIC 0x19,4
 	RJMP _0x26
 	__GETB1MN _keys,4
 	RET
-; 0000 00B4         if(!PINA.5) return keys[5];
+; 0000 00B3         if(!PINA.5) return keys[5];
 _0x26:
 	SBIC 0x19,5
 	RJMP _0x27
 	__GETB1MN _keys,5
 	RET
-; 0000 00B5         if(!PINA.6) return keys[6];
+; 0000 00B4         if(!PINA.6) return keys[6];
 _0x27:
 	SBIC 0x19,6
 	RJMP _0x28
 	__GETB1MN _keys,6
 	RET
-; 0000 00B6         if(!PINA.7) return keys[7];
+; 0000 00B5         if(!PINA.7) return keys[7];
 _0x28:
 	SBIC 0x19,7
 	RJMP _0x29
 	__GETB1MN _keys,7
 	RET
-; 0000 00B7         PORTA.0=1;PORTA.1=1;PORTA.2=0;PORTA.3=1;
+; 0000 00B6         PORTA.0=1;PORTA.1=1;PORTA.2=0;PORTA.3=1;
 _0x29:
 	SBI  0x1B,0
 	SBI  0x1B,1
 	CBI  0x1B,2
 	SBI  0x1B,3
-; 0000 00B8         if(!PINA.4) return keys[8];
+; 0000 00B7         if(!PINA.4) return keys[8];
 	SBIC 0x19,4
 	RJMP _0x32
 	__GETB1MN _keys,8
 	RET
-; 0000 00B9         if(!PINA.5) return keys[9];
+; 0000 00B8         if(!PINA.5) return keys[9];
 _0x32:
 	SBIC 0x19,5
 	RJMP _0x33
 	__GETB1MN _keys,9
 	RET
-; 0000 00BA         if(!PINA.6) return keys[10];
+; 0000 00B9         if(!PINA.6) return keys[10];
 _0x33:
 	SBIC 0x19,6
 	RJMP _0x34
 	__GETB1MN _keys,10
 	RET
-; 0000 00BB         if(!PINA.7) return keys[11];
+; 0000 00BA         if(!PINA.7) return keys[11];
 _0x34:
 	SBIC 0x19,7
 	RJMP _0x35
 	__GETB1MN _keys,11
 	RET
-; 0000 00BC         PORTA.0=1;PORTA.1=1;PORTA.2=1;PORTA.3=0;
+; 0000 00BB         PORTA.0=1;PORTA.1=1;PORTA.2=1;PORTA.3=0;
 _0x35:
 	SBI  0x1B,0
 	SBI  0x1B,1
 	SBI  0x1B,2
 	CBI  0x1B,3
-; 0000 00BD         if(!PINA.4) return keys[12];
+; 0000 00BC         if(!PINA.4) return keys[12];
 	SBIC 0x19,4
 	RJMP _0x3E
 	__GETB1MN _keys,12
 	RET
-; 0000 00BE         if(!PINA.5) return keys[13];
+; 0000 00BD         if(!PINA.5) return keys[13];
 _0x3E:
 	SBIC 0x19,5
 	RJMP _0x3F
 	__GETB1MN _keys,13
 	RET
-; 0000 00BF         if(!PINA.6) return keys[14];
+; 0000 00BE         if(!PINA.6) return keys[14];
 _0x3F:
 	SBIC 0x19,6
 	RJMP _0x40
 	__GETB1MN _keys,14
 	RET
-; 0000 00C0         if(!PINA.7) return keys[15];
+; 0000 00BF         if(!PINA.7) return keys[15];
 _0x40:
 	SBIC 0x19,7
 	RJMP _0x41
 	__GETB1MN _keys,15
 	RET
-; 0000 00C1         return 16;
+; 0000 00C0         return 16;
 _0x41:
 	LDI  R30,LOW(16)
 	RET
-; 0000 00C2     }
+; 0000 00C1     }
 ; .FEND
+;
 ;    int getval(char key)
 ; 0000 00C4     {
 _getval:
@@ -1872,7 +1872,24 @@ _0x4A:
 	BREQ _0x4C
 _0x4D:
 ; 0000 00EC         {
-; 0000 00ED             digit2 = (digit1 *10) + key - '0';
+; 0000 00ED             if (flag ==1)
+	LDI  R30,LOW(1)
+	CP   R30,R10
+	BRNE _0x4F
+; 0000 00EE             {
+; 0000 00EF                 digit2 = /*(digit1 *10) +*/ key - '0';
+	LD   R30,Y
+	SUBI R30,LOW(48)
+	MOV  R8,R30
+; 0000 00F0                 flag =0;
+	CLR  R10
+; 0000 00F1                 break;
+	RJMP _0x45
+; 0000 00F2             }
+; 0000 00F3             else
+_0x4F:
+; 0000 00F4             {
+; 0000 00F5                 digit2 = (digit1 *10) + key - '0';
 	MOV  R30,R9
 	LDI  R26,LOW(10)
 	MULS R30,R26
@@ -1881,66 +1898,69 @@ _0x4D:
 	ADD  R26,R30
 	SUBI R26,LOW(48)
 	MOV  R8,R26
-; 0000 00EE             break;
+; 0000 00F6                 break;
 	RJMP _0x45
-; 0000 00EF         }
-; 0000 00F0         if ( (key >= '0') && (key<= '9') )
+; 0000 00F7             }
+; 0000 00F8 
+; 0000 00F9             break;
+; 0000 00FA         }
+; 0000 00FB         if ( (key >= '0') && (key<= '9') )
 _0x4C:
 	LD   R26,Y
 	CPI  R26,LOW(0x30)
-	BRLO _0x50
+	BRLO _0x52
 	CPI  R26,LOW(0x3A)
-	BRLO _0x51
-_0x50:
-	RJMP _0x4F
-_0x51:
-; 0000 00F1         {
-; 0000 00F2             digit1 = key - '0';
+	BRLO _0x53
+_0x52:
+	RJMP _0x51
+_0x53:
+; 0000 00FC         {
+; 0000 00FD             digit1 = key - '0';
 	LD   R30,Y
 	SUBI R30,LOW(48)
 	MOV  R9,R30
-; 0000 00F3             if (digit1 ==0) flag = 1;
+; 0000 00FE             if (digit1 ==0) flag = 1;
 	TST  R9
-	BRNE _0x52
+	BRNE _0x54
 	LDI  R30,LOW(1)
 	MOV  R10,R30
-; 0000 00F4             return digit1;
-_0x52:
+; 0000 00FF             return digit1;
+_0x54:
 	MOV  R30,R9
 	LDI  R31,0
 	RJMP _0x2000001
-; 0000 00F5         }
-; 0000 00F6        }
-_0x4F:
+; 0000 0100         }
+; 0000 0101        }
+_0x51:
 	RJMP _0x43
 _0x45:
-; 0000 00F7       }
-; 0000 00F8       Ready_segment(mode);
+; 0000 0102       }
+; 0000 0103       Ready_segment(mode);
 _0x42:
 	LDS  R26,_mode
 	LDS  R27,_mode+1
 	RCALL _Ready_segment
-; 0000 00F9     }
+; 0000 0104     }
 _0x2000001:
 	ADIW R28,1
 	RET
 ; .FEND
 ;
 ;    void LightDancer()
-; 0000 00FC 	{
+; 0000 0107 	{
 _LightDancer:
 ; .FSTART _LightDancer
-; 0000 00FD 		int a;
-; 0000 00FE 		char led[]=
-; 0000 00FF          {
-; 0000 0100 			0b11111111,
-; 0000 0101 			0b11100111,
-; 0000 0102 			0b11000011,
-; 0000 0103 			0b10000001,
-; 0000 0104 			0b00000000,
-; 0000 0105          };
-; 0000 0106 
-; 0000 0107 		for (a=0;a<=5;a++)
+; 0000 0108 		int a;
+; 0000 0109 		char led[]=
+; 0000 010A          {
+; 0000 010B 			0b11111111,
+; 0000 010C 			0b11100111,
+; 0000 010D 			0b11000011,
+; 0000 010E 			0b10000001,
+; 0000 010F 			0b00000000,
+; 0000 0110          };
+; 0000 0111 
+; 0000 0112 		for (a=0;a<=5;a++)
 	SBIW R28,5
 	LDI  R30,LOW(255)
 	ST   Y,R30
@@ -1957,32 +1977,32 @@ _LightDancer:
 ;	a -> R16,R17
 ;	led -> Y+2
 	__GETWRN 16,17,0
-_0x54:
+_0x56:
 	__CPWRN 16,17,6
-	BRGE _0x55
-; 0000 0108 		{
-; 0000 0109 			PORTB=led[a];
+	BRGE _0x57
+; 0000 0113 		{
+; 0000 0114 			PORTB=led[a];
 	MOVW R26,R28
 	ADIW R26,2
 	ADD  R26,R16
 	ADC  R27,R17
 	LD   R30,X
 	OUT  0x18,R30
-; 0000 010A 			delay_ms(100);
+; 0000 0115 			delay_ms(100);
 	LDI  R26,LOW(100)
 	LDI  R27,0
 	CALL _delay_ms
-; 0000 010B 		};
+; 0000 0116 		};
 	__ADDWRN 16,17,1
-	RJMP _0x54
-_0x55:
-; 0000 010C         for (a=4;a>=0;a--)
-	__GETWRN 16,17,4
+	RJMP _0x56
 _0x57:
+; 0000 0117         for (a=4;a>=0;a--)
+	__GETWRN 16,17,4
+_0x59:
 	TST  R17
-	BRMI _0x58
-; 0000 010D 		{
-; 0000 010E 			LED_PORT= ~(led[a]);
+	BRMI _0x5A
+; 0000 0118 		{
+; 0000 0119 			LED_PORT= ~(led[a]);
 	MOVW R26,R28
 	ADIW R26,2
 	ADD  R26,R16
@@ -1990,15 +2010,15 @@ _0x57:
 	LD   R30,X
 	COM  R30
 	OUT  0x18,R30
-; 0000 010F 			delay_ms(100);
+; 0000 011A 			delay_ms(100);
 	LDI  R26,LOW(100)
 	LDI  R27,0
 	CALL _delay_ms
-; 0000 0110 		}
+; 0000 011B 		}
 	__SUBWRN 16,17,1
-	RJMP _0x57
-_0x58:
-; 0000 0111 	}
+	RJMP _0x59
+_0x5A:
+; 0000 011C 	}
 	LDD  R17,Y+1
 	LDD  R16,Y+0
 	ADIW R28,7
@@ -2006,45 +2026,47 @@ _0x58:
 ; .FEND
 ;
 ;    void sound_buzzer()
-; 0000 0114     {
+; 0000 011F     {
 _sound_buzzer:
 ; .FSTART _sound_buzzer
-; 0000 0115     Buzzer = 1;
-	RCALL SUBOPT_0x3
-; 0000 0116     delay_ms(500);
-; 0000 0117     Buzzer = 0;
-; 0000 0118     Buzzer = 1;
-	RCALL SUBOPT_0x3
-; 0000 0119     delay_ms(500);
-; 0000 011A     Buzzer = 0;
-; 0000 011B     }
+; 0000 0120         PORTD = 0xFF;
+	LDI  R30,LOW(255)
+	OUT  0x12,R30
+; 0000 0121 //        delay_ms(500);
+; 0000 0122 //        PORTD = 0;
+; 0000 0123 //        delay_ms(500);
+; 0000 0124 //        PORTD = 1;
+; 0000 0125 //        delay_ms(500);
+; 0000 0126 //        PORTD = 0;
+; 0000 0127     }
 	RET
 ; .FEND
+;
 ;    void Finish()
-; 0000 011D     {
+; 0000 012A     {
 _Finish:
 ; .FSTART _Finish
-; 0000 011E      TCCR0=(0<<WGM00) | (0<<COM01) | (0<<COM00) | (0<<WGM01) | (0<<CS02) | (0<<CS01) | (0<<CS00);
+; 0000 012B      TCCR0=(0<<WGM00) | (0<<COM01) | (0<<COM00) | (0<<WGM01) | (0<<CS02) | (0<<CS01) | (0<<CS00);
 	LDI  R30,LOW(0)
 	OUT  0x33,R30
-; 0000 011F      TCCR1B=(0<<ICNC1) | (0<<ICES1) | (0<<WGM13) | (0<<WGM12) | (0<<CS12) | (0<<CS11) | (0<<CS10);
+; 0000 012C      TCCR1B=(0<<ICNC1) | (0<<ICES1) | (0<<WGM13) | (0<<WGM12) | (0<<CS12) | (0<<CS11) | (0<<CS10);
 	OUT  0x2E,R30
-; 0000 0120      sound_buzzer();
+; 0000 012D      sound_buzzer();
 	RCALL _sound_buzzer
-; 0000 0121      LightDancer();
+; 0000 012E      LightDancer();
 	RCALL _LightDancer
-; 0000 0122      PORTC = 0x40;
+; 0000 012F      PORTC = 0x40;
 	LDI  R30,LOW(64)
 	OUT  0x15,R30
-; 0000 0123      PORTD = 0x0F;
+; 0000 0130      PORTD = 0x0F;
 	LDI  R30,LOW(15)
 	OUT  0x12,R30
-; 0000 0124      mode = 1;
+; 0000 0131      mode = 1;
 	LDI  R30,LOW(1)
 	LDI  R31,HIGH(1)
 	STS  _mode,R30
 	STS  _mode+1,R31
-; 0000 0125     }
+; 0000 0132     }
 	RET
 ; .FEND
 ;
@@ -2098,15 +2120,6 @@ SUBOPT_0x2:
 	LDI  R30,LOW(10)
 	LDI  R31,HIGH(10)
 	CALL __DIVW21
-	RET
-
-;OPTIMIZER ADDED SUBROUTINE, CALLED 2 TIMES, CODE SIZE REDUCTION:1 WORDS
-SUBOPT_0x3:
-	SBI  0x10,5
-	LDI  R26,LOW(500)
-	LDI  R27,HIGH(500)
-	CALL _delay_ms
-	CBI  0x10,5
 	RET
 
 
